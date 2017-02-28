@@ -2279,3 +2279,297 @@ Vector smash protection is enabled.
 1486767447741	geckodriver::marionette	INFO	Starting browser /Applications/Firefox.app/Contents/MacOS/firefox-bin
 1486767447745	geckodriver::marionette	INFO	Connecting to Marionette on localhost:58060
 1486767448391	Marionette	INFO	Listening on port 58060
+2017-02-11 14:55:22.704 geckodriver[73088:14426704] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.704 geckodriver[70961:14426730] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.704 geckodriver[71809:14426716] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.704 geckodriver[73627:14426425] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.704 geckodriver[70392:14426750] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.704 geckodriver[73056:14426618] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.705 geckodriver[73091:14426548] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.705 geckodriver[73059:14426812] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.705 geckodriver[70590:14426556] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.705 geckodriver[73220:14426517] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.705 geckodriver[73113:14426803] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.705 geckodriver[73135:14426540] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.706 geckodriver[73530:14426842] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73172:14426897] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.715 geckodriver[70160:14426790] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.714 geckodriver[73301:14426519] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.715 geckodriver[73147:14426855] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.714 geckodriver[73624:14426547] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.714 geckodriver[73554:14426901] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.714 geckodriver[73606:14426933] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.714 geckodriver[73574:14426696] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.714 geckodriver[73533:14426884] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73546:14426889] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[70426:14426568] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[70551:14426419] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[70909:14426502] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[70675:14426826] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[70883:14426871] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[70657:14426412] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.711 geckodriver[70759:14426914] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[70786:14426528] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[73297:14426875] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.711 geckodriver[70741:14426686] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.711 geckodriver[70689:14426664] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.711 geckodriver[70923:14426828] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.710 geckodriver[71577:14426721] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.711 geckodriver[70515:14426500] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.710 geckodriver[70870:14426731] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.710 geckodriver[71713:14426510] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.710 geckodriver[71729:14426756] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[71876:14426516] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[73071:14426698] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[73132:14426848] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[72977:14426683] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[73193:14426880] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[71675:14426589] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[72915:14426788] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[71826:14426738] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[73571:14426833] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[71694:14426508] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[71591:14426552] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[73278:14426906] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[70977:14426741] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[71027:14426685] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[71746:14426702] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[71430:14426564] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.707 geckodriver[73236:14426860] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.707 geckodriver[70989:14426742] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.706 geckodriver[73239:14426853] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.707 geckodriver[70728:14426426] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.707 geckodriver[71459:14426659] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.707 geckodriver[71508:14426572] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.706 geckodriver[73074:14426815] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.714 geckodriver[73587:14426536] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.706 geckodriver[71611:14426606] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.705 geckodriver[71444:14426660] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.714 geckodriver[73654:14426638] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73169:14426864] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73590:14426867] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.705 geckodriver[71890:14426770] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73610:14426612] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73150:14426817] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73224:14426825] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73116:14426690] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[71904:14426791] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73258:14426725] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[71975:14426755] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[72980:14426804] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.713 geckodriver[73651:14426678] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.710 geckodriver[71923:14426780] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.712 geckodriver[71937:14426778] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.710 geckodriver[71646:14426837] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.711 geckodriver[71785:14426603] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.710 geckodriver[71846:14426513] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.709 geckodriver[71476:14426503] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[71761:14426511] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[71862:14426774] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[73261:14426767] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[71014:14426720] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[71627:14426509] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.707 geckodriver[73196:14426930] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.706 geckodriver[73032:14426512] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.707 geckodriver[73036:14426824] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[71010:14426535] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.708 geckodriver[73281:14426913] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.707 geckodriver[70801:14426501] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.707 geckodriver[70407:14426633] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.706 geckodriver[71490:14426507] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.706 geckodriver[70773:14426795] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.706 geckodriver[70854:14426665] Metadata.framework [Error]: server port invalidated for uid 501
+2017-02-11 14:55:22.724 geckodriver[73056:14426616] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70392:14426747] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70741:14426681] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70515:14427375] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73091:14426542] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73220:14427376] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71890:14426761] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70923:14426680] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70689:14426661] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73059:14426805] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73113:14426797] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70759:14427377] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71444:14426651] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70590:14426553] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70675:14426582] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71611:14426598] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73135:14426537] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73530:14426839] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70854:14427378] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73074:14426809] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70773:14426794] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73088:14426703] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73239:14426847] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71490:14427382] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73032:14427381] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71459:14426650] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70786:14426527] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70407:14426827] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70870:14426727] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73036:14426818] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71508:14426569] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70989:14426737] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70801:14427385] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73236:14426856] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71430:14426561] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73196:14426522] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70961:14426726] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71010:14426529] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70883:14426760] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73281:14426900] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[73571:14426830] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71746:14426699] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71761:14427387] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[70909:14427386] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71627:14427388] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71862:14426766] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.724 geckodriver[71014:14426710] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71027:14426671] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73261:14426758] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71694:14427389] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73278:14426895] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71591:14426549] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[72977:14426669] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73132:14426844] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71826:14426734] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[70977:14426744] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71476:14427390] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73071:14426694] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71675:14426578] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71876:14427391] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73193:14426877] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71729:14426748] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71577:14426711] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71846:14427392] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[70657:14427393] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71785:14426594] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71809:14426712] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71646:14426834] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71923:14426775] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[72980:14426799] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71904:14426783] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73627:14427394] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71937:14426771] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73116:14426687] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73224:14426819] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73258:14426718] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73651:14426668] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71975:14426745] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73150:14426810] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73172:14426892] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73610:14426605] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73169:14426859] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73546:14426885] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73590:14426863] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73554:14426891] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73301:14427395] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73533:14426881] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73606:14426868] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73624:14426541] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73587:14426532] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73654:14426631] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73574:14426691] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73147:14426849] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[71713:14427396] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[73297:14426872] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[70160:14426785] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.725 geckodriver[72915:14426781] Metadata.framework [Error]: client check-in failed: (-308) (ipc/mig) server died
+2017-02-11 14:55:22.729 geckodriver[73056:14426620] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.729 geckodriver[70392:14426752] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.729 geckodriver[70741:14426676] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[70515:14426429] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73091:14426544] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73220:14426433] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[71890:14426763] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[70923:14426682] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[70689:14426662] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73059:14426807] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73113:14426798] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[70759:14426838] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[71444:14426655] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[70590:14426554] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[70675:14426585] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[71611:14426600] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73135:14426538] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73530:14426840] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[70854:14426666] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73074:14426811] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[70773:14426792] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73088:14426705] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73239:14426850] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[71490:14426423] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[73032:14426414] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[71459:14426652] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.730 geckodriver[70786:14426525] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[70407:14426642] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[70870:14426729] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[73036:14426820] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71508:14426570] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[70989:14426740] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[70801:14426402] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[73236:14426857] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71430:14426562] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[73196:14426523] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[70961:14426728] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71010:14426530] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[70883:14426764] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[73281:14426910] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[73571:14426831] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71746:14426700] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71761:14426407] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[70909:14426417] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71627:14426420] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71862:14426769] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71014:14426713] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[73261:14426759] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71027:14426675] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.731 geckodriver[71694:14426403] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[73278:14426899] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71591:14426550] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[72977:14426672] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[73132:14426845] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71826:14426735] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[70977:14426754] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71476:14426416] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[73071:14426695] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71675:14426581] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71876:14426434] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[73193:14426878] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71729:14426751] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71577:14426714] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71846:14426411] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[70657:14426410] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71785:14426596] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71809:14426719] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71646:14426835] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71923:14426777] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[72980:14426801] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.732 geckodriver[71904:14426786] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73627:14426427] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[71937:14426773] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73116:14426688] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73224:14426821] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73258:14426722] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73651:14426670] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[71975:14426746] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73150:14426814] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73172:14426893] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73610:14426608] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73169:14426861] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73546:14426887] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73590:14426865] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73554:14426896] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73301:14426435] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73533:14426882] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73606:14426869] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73624:14426543] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73587:14426533] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.734 geckodriver[71713:14426406] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.734 geckodriver[73297:14426873] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.734 geckodriver[73147:14426852] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73574:14426692] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.733 geckodriver[73654:14426634] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.734 geckodriver[70160:14426793] Metadata.framework [Error]: couldn't get the client port
+2017-02-11 14:55:22.734 geckodriver[72915:14426782] Metadata.framework [Error]: couldn't get the client port
