@@ -7,6 +7,8 @@ from selenium.webdriver.common.keys import Keys
 
 import Tkinter as tk
 
+from xvfbwrapper import Xvfb
+
 from AutomatorError import AutomatorSetupError
 
 
@@ -39,6 +41,9 @@ class Translate_Automator(object):
     def __init__(self, driver=webdriver.Firefox(), user="", pw="", fileName=""):
         """
         """
+
+        self.vdisplay = Xvfb()
+        self.vdisplay.start()
         self.root = tk.Tk()
         self.driver = driver
         self.user = user
@@ -80,6 +85,8 @@ class Translate_Automator(object):
     def close(self):
         self.driver.close
         self._writeResultToFile()
+
+        self.vdisplay.stop()
 
     def run_step(self, sentence):
         self.driver.get(self.TRANSLATE_URL)
@@ -157,7 +164,7 @@ class Translate_Automator(object):
         for item in self.result:
             resFile.write("%s\n" % item)
 
-            
+
 if __name__ == "__main__":
     a = Translate_Automator(webdriver.Firefox(), sys.argv[1], sys.argv[2], sys.argv[3])
     a.setup()
