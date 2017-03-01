@@ -39,9 +39,6 @@ class Translate_Automator(object):
     RESULT_CONTRIB_BUTTON = "contribute-target"
 
     def __init__(self, driver=webdriver.Firefox(), user="", pw="", fileName=""):
-        """
-        """
-
         self.vdisplay = Xvfb()
         self.vdisplay.start()
         self.root = tk.Tk()
@@ -64,6 +61,9 @@ class Translate_Automator(object):
 
         self.driver.find_element_by_id('Passwd').send_keys(self.pw)
         self.driver.find_element_by_id('signIn').click()
+        time.sleep(2)
+
+        self.driver.get(self.TRANSLATE_URL)
         time.sleep(2)
 
         print "Automator: %s, Setup Complete" % self
@@ -89,8 +89,6 @@ class Translate_Automator(object):
         self.vdisplay.stop()
 
     def run_step(self, sentence):
-        self.driver.get(self.TRANSLATE_URL)
-
         self._putEnglishToSourceBox(sentence)
 
         self._setLanguage("result", "Japanese")
@@ -104,6 +102,8 @@ class Translate_Automator(object):
 
         self.result.append(self.root.clipboard_get())
 
+        self._clearBoxes()
+
     def _setLanguage(self, boxType, targetLang):
         languageList = []
 
@@ -113,14 +113,19 @@ class Translate_Automator(object):
         if boxType == "result":
             self.driver.find_element_by_id(self.RESULT_LANGUAGE_BUTTON).click()
             languageList = self.driver.find_element_by_id(self.RESULT_LANGUAGE_MENU).find_elements_by_class_name(self.LANGUAGE_ITEM)
-        time.sleep(0.5)
+        time.sleep(0.1)
 
         for language in languageList:
             if language.text == targetLang:
                 language.click()
                 break
 
-        time.sleep(1)
+        time.sleep(0.1)
+
+    def _clearBoxes(self):
+        self.driver.find_element_by_id(self.SOURCE_BOX).clear()
+        self.driver.find_element_by_id(self.RESULT_CONTRIB_BUTTON).clear()
+        time.sleep(0.01)
 
     def _putEnglishToSourceBox(self, sentence):
         self._setLanguage("source", "English")
@@ -133,31 +138,31 @@ class Translate_Automator(object):
         source = self.driver.find_element_by_id(self.SOURCE_BOX)
         copy = self.driver.find_element_by_id(self.RESULT_EDIT_BOX)
         copy.click()
-        time.sleep(1)
+        time.sleep(0.1)
 
         copy = self.driver.find_element_by_id(self.RESULT_CONTRIB_BUTTON)
         copy.click()
 
         copy.send_keys(Keys.COMMAND, 'a')
         copy.send_keys(Keys.COMMAND, 'c')
-        time.sleep(1)
+        time.sleep(0.1)
 
         source.click()
         source.send_keys(Keys.COMMAND, 'a')
         source.send_keys(Keys.COMMAND, 'v')
-        time.sleep(1)
+        time.sleep(0.1)
 
     def _copyResultFromResultBoxToClipBoard(self):
         copy = self.driver.find_element_by_id(self.RESULT_EDIT_BOX)
         copy.click()
-        time.sleep(1)
+        time.sleep(0.1)
 
         copy = self.driver.find_element_by_id(self.RESULT_CONTRIB_BUTTON)
         copy.click()
 
         copy.send_keys(Keys.COMMAND, 'a')
         copy.send_keys(Keys.COMMAND, 'c')
-        time.sleep(1)
+        time.sleep(0.1)
 
     def _writeResultToFile(self):
         resFile = open("results/"+str(datetime.now())+".result", "w")
@@ -166,7 +171,10 @@ class Translate_Automator(object):
 
 
 if __name__ == "__main__":
+    start = time.time()
     a = Translate_Automator(webdriver.Firefox(), sys.argv[1], sys.argv[2], sys.argv[3])
     a.setup()
     a.run_batch()
     a.close()
+    end = time.time()
+    print "Running time: %s sec\n" % str(end-start)
