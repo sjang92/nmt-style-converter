@@ -1,7 +1,5 @@
 import tensorflow as tf
 
-from tensorflow.models.rnn import rnn_cell
-
 class Custom_Cell(object):
     def __init__(self, size):
         """
@@ -22,13 +20,13 @@ class NMT_Cell_Generator(object):
 
     def get_cell(self):
         if self.cell_type == "gru":
-            cell = rnn_cell.GRUCell(self.size)
+            cell = tf.nn.rnn_cell.GRUCell(self.size)
         elif self.cell_type == "lstm":
-            cell = rnn_cell.BasicLSTMCell(self.size)
+            cell = tf.nn.rnn_cell.BasicLSTMCell(self.size)
         else:
             cell = Custom_Cell(self.size)
 
         if num_layers > 1:
-            cell = rnn_cell.MultiRNNCell([cell] * self.num_layers)
+            cell = tf.nn.rnn_cell.MultiRNNCell([cell] * self.num_layers)
 
         return cell
