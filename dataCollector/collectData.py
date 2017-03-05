@@ -4,12 +4,14 @@ from datetime import datetime
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+import selenium
 
 import Tkinter as tk
 
 from xvfbwrapper import Xvfb
 
 from AutomatorError import AutomatorSetupError
+from selenium.common.exceptions import ElementNotVisibleException
 
 
 class Translate_Automator(object):
@@ -74,7 +76,8 @@ class Translate_Automator(object):
     def readFile(self):
         with open(self.fileName) as f:
             _content = f.readlines()
-        _content = [line.strip() for line in _content]
+        _content = [line.decode("utf-8").encode("ascii","ignore").strip() for line in _content]
+
         self.content = _content
 
     def run_batch(self):
@@ -113,19 +116,19 @@ class Translate_Automator(object):
         if boxType == "result":
             self.driver.find_element_by_id(self.RESULT_LANGUAGE_BUTTON).click()
             languageList = self.driver.find_element_by_id(self.RESULT_LANGUAGE_MENU).find_elements_by_class_name(self.LANGUAGE_ITEM)
-        time.sleep(0.1)
+        time.sleep(1)
 
         for language in languageList:
             if language.text == targetLang:
                 language.click()
                 break
 
-        time.sleep(0.1)
+        time.sleep(1)
 
     def _clearBoxes(self):
         self.driver.find_element_by_id(self.SOURCE_BOX).clear()
         self.driver.find_element_by_id(self.RESULT_CONTRIB_BUTTON).clear()
-        time.sleep(0.01)
+        time.sleep(1)
 
     def _putEnglishToSourceBox(self, sentence):
         self._setLanguage("source", "English")
@@ -135,34 +138,38 @@ class Translate_Automator(object):
         source.send_keys(Keys.RETURN) #press Enter
 
     def _copyResultFromResultBoxToSourceBox(self):
+        time.sleep(1)
         source = self.driver.find_element_by_id(self.SOURCE_BOX)
+
         copy = self.driver.find_element_by_id(self.RESULT_EDIT_BOX)
         copy.click()
-        time.sleep(0.1)
+
+        time.sleep(1)
 
         copy = self.driver.find_element_by_id(self.RESULT_CONTRIB_BUTTON)
         copy.click()
 
         copy.send_keys(Keys.COMMAND, 'a')
         copy.send_keys(Keys.COMMAND, 'c')
-        time.sleep(0.1)
+        time.sleep(1)
 
         source.click()
         source.send_keys(Keys.COMMAND, 'a')
         source.send_keys(Keys.COMMAND, 'v')
-        time.sleep(0.1)
+        time.sleep(1)
 
     def _copyResultFromResultBoxToClipBoard(self):
+        time.sleep(1)
         copy = self.driver.find_element_by_id(self.RESULT_EDIT_BOX)
         copy.click()
-        time.sleep(0.1)
+        time.sleep(1)
 
         copy = self.driver.find_element_by_id(self.RESULT_CONTRIB_BUTTON)
         copy.click()
 
         copy.send_keys(Keys.COMMAND, 'a')
         copy.send_keys(Keys.COMMAND, 'c')
-        time.sleep(0.1)
+        time.sleep(1)
 
     def _writeResultToFile(self):
         resFile = open("results/"+str(datetime.now())+".result", "w")
