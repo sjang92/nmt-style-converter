@@ -169,6 +169,8 @@ class NMT_Model(object):
                 print "implement this part for custom seq2seq"
                 self.outputs, self.losses = bucket_model(self.encoder_inputs, self.decoder_inputs, self.targets, self.target_weights, self.buckets, lambda x, y: self.seq_func(x, y, False), softmax_loss_function=self.loss_func)
 
+        import pdb
+        pdb.set_trace()
 
 
         # Train op is configured only when we do backprop
