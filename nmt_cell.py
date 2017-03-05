@@ -9,7 +9,8 @@ class Custom_Cell(object):
         """
 
 class NMT_Cell_Generator(object):
-    def __init__(self, cell_type, num_layers=1, size):
+
+    def __init__(self, cell_type, size, num_layers=1):
         """
         cell_type = gru, lstm, custom
         size = number of units in each layer of the model

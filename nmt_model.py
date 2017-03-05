@@ -1,7 +1,7 @@
 import tensorflow as tf
 
-import NMT_Cell_Generator from nmt_cell
-
+from nmt_cell import  NMT_Cell_Generator
+from seq2seq import attention_seq2seq
 
 class NMT_Model(object):
 
@@ -72,8 +72,9 @@ class NMT_Model(object):
         """
         if func_type == 'basic':
             print "Configured seq func as basic"
-            self.seq_func = nmt.basic_rnn_seq2seq
+            #self.seq_func = nmt.basic_rnn_seq2seq
         elif func_type == 'attention':
             print "Configured seq func as attention"
+            self.seq_func = attention_seq2seq 
         else:
-
+            print "Custom"
