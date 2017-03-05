@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorflow.nn.seq2seq as tf_seq2seq
 
 from nmt_cell import  NMT_Cell_Generator
 from seq2seq import attention_seq2seq, bucket_model
@@ -21,22 +22,28 @@ class NMT_Model(object):
 
         self.batch_size = batch_size
         self.num_layers = num_layers
+        self.num_samples = num_samples
 
         self.lr = tf.Variable(float(lr), trainable=False)
-
-        # TODO : use sampled softmax?
-
+        self.learning_rate_decay_op = self.lr.assign(self.lr * lr_decay)
+        self.global_step=tf.Variable(0, trainable=False)
+        self.forward_only = forward_only
     """
     ====================== LIST OF CONFIG METHODS ==============================
     Use the methods below to configure our nmt model. Since we might want to 
     test multiple configurations (cell type, func type, etc.) it would be more
-    efficient to be able to change the cell / seq func from outside the object
+    efficient to be able to change the cell / seq func from outside the object.
+
+    MAKE SURE THSES CONFIG METHODS ARE CALLED IN ORDER
 
     Methods:
         define_embedding_mtrx
         define_nmt_cell
-        define_nmt_seq_func
         define_nmt_buckets
+        define_loss_func
+        define_nmt_seq_func
+        define_train_ops
+
     """
 
     def define_embedding_mtrx(self, src_eb_mtrx=None, dst_eb_mtrx=None, trainable=True):
@@ -82,6 +89,23 @@ class NMT_Model(object):
         self.targets = [self.decoder_inputs[i + 1] for i in xrange(len(self.decoder_inputs) - 1)]
 
 
+    def define_loss_func(self, loss_type):
+        if loss_type == 'sampled':
+            assert self.num_samples < self.dst_vocab_size, '# samples should be less than |V|'
+            w = tf.get_variable("proj_w", [self.size, self.dst_vocab_size])
+            w_t = tf.transpose(w)
+            b = tf.get_variable("proj_b", [self.dst_vocab_size])
+
+            self.output_projection = (w, b)
+            # TODO : figure out if we need to use CPU
+            def sampled_loss(inputs, labels):
+                with tf.device("/cpu:0"):
+                    labels = tf.reshape(labels, [-1, 1])
+                    return tf.nn.sampled_softmax_loss(w_t, b, inputs, labels, self.num_samples, self.dst_vocab_size)
+
+        self.loss_func = sampled_loss
+
+
     def define_nmt_seq_func(self, func_type):
         """
         Defines the sequence2sequence method for our NMT Model.
@@ -92,19 +116,68 @@ class NMT_Model(object):
         Args:
             func_type : string, ['basic', 'attention','custom']
         """
+        self.func_type = func_type
+
         if func_type == 'basic':
             print "Configured seq func as basic"
             #self.seq_func = nmt.basic_rnn_seq2seq
         elif func_type == 'attention':
             print "Configured seq func as attention"
-            seq_func = attention_seq2seq 
+            seq_func = tf_seq2seq.embedding_attention_seq2seq
+            def seq2seq_func(encoder_inputs, decoder_inputs, do_decode):
+                return seq_func(self.encoder_inputs, self.decoder_inputs, 
+                                self.cell, self_src_vocab_size, self.dst_covab_size, 
+                                output_projection=None, feed_previous=do_decode)
         else:
             print "Custom"
-
-        def seq2seq_func(encoder_inputs, decoder_inputs, do_decode):
-            return seq_func(self.encoder_inputs, self.decoder_inputs, self.cell, self.src_vocab_size, self.dst_vocab_size, self.encoder_dim, self.decoder_dim, src_embedding_init=self.src_embedding_mtrx, dst_embedding_init=self.dst_embedding_mtrx, output_projection=None, feed_previous=do_decode)
+            seq_func = attention_seq2seq
+            def seq2seq_func(encoder_inputs, decoder_inputs, do_decode):
+                return seq_func(self.encoder_inputs, self.decoder_inputs, self.cell, 
+                                self.src_vocab_size, self.dst_vocab_size, self.encoder_dim, 
+                                self.decoder_dim, src_embedding_init=self.src_embedding_mtrx, 
+                                dst_embedding_init=self.dst_embedding_mtrx, 
+                                output_projection=None, feed_previous=do_decode)
 
         self.seq_func = seq2seq_func
 
+    def define_train_ops(self):
+        if self.forward_only is True:
+            print "implement this part when we're ready for results"
+        else:
+            if self.func_type == "attention":
+                self.outputs, self.losses = tf_seq2seq.model_with_buckets(self.encoder_inputs, self.decoder_inputs, targets, self.target_weights, self.buckets, self.dst_vocab_size, lambda x, y: self.seq_func(x, y, False), softmax_loss_function=self.loss_func)
+            # Custom
+            else:
+                print "implement this part for custom seq2seq"
+
+        # Train op is configured only when we do backprop
+        params = tf.trainable_variables()
+        if self.forward_only is not True:
+            self.grad_norms = []
+            self.updates = []
+            optimizer = tf.train.AdamOptimizer(self.lr)
+
+            for b in xrange(len(self.buckets)):
+                grads = tf.gradients(self.losses[b], params)
+                clipped_grads, norm = tf.clip_by_global_norm(grads, self.max_grad_norm)
+                self.grad_norms.append(norm)
+                self.updates.append(optimizer.apply_gradients(zip(clipped_grads, params), global_step=self.global_step))
+        self.saver = tf.train.Saver(tf.all_variables())
+
+
+
+    """
+    ================================= LIST OF MAIN METHODS =====================
+    """
+
+    def step(self, session, encoder_inputs, decoder_inputs, target_weights, bucket_id, forward_only):
+        """
+        Run a single step of our nmt model.
+
+        Args:
+            session : tf session
+            encoder_inputs, decoder_inputs : numpy array of token ids
+            bucket_id: which bucket to use
+        """
 
 
