@@ -1,12 +1,15 @@
 import tensorflow as tf
-import tensorflow.nn.seq2seq as tf_seq2seq
+#from tensorflow.nn import seq2seq as tf_seq2seq
+
+tf_seq2seq = tf.nn.seq2seq
+
 
 from nmt_cell import  NMT_Cell_Generator
 from seq2seq import attention_seq2seq, bucket_model
 
 class NMT_Model(object):
 
-    def __init__(self, src_vocab_size, dst_vocab_size,
+    def __init__(self, src_vocab_size, dst_vocab_size, buckets, size,
                  num_layers, max_grad_norm, batch_size, lr, lr_decay, 
                  use_lstm=True, num_samples=512, forward_only=False):
 
@@ -65,7 +68,8 @@ class NMT_Model(object):
             size: number of units in each layer of the model
         """
         self.size = size
-        self.cell = NMT_Cell_Generator(cell_type, self.num_layers, size)
+        cell_gen = NMT_Cell_Generator(cell_type, self.num_layers, size)
+        self.cell = cell_gen.get_cell()
 
     def define_nmt_buckets(self, buckets):
         """
@@ -123,11 +127,12 @@ class NMT_Model(object):
             #self.seq_func = nmt.basic_rnn_seq2seq
         elif func_type == 'attention':
             print "Configured seq func as attention"
-            seq_func = tf_seq2seq.embedding_attention_seq2seq
+            #seq_func = tf_seq2seq.embedding_attention_seq2seq
             def seq2seq_func(encoder_inputs, decoder_inputs, do_decode):
-                return seq_func(self.encoder_inputs, self.decoder_inputs, 
-                                self.cell, self_src_vocab_size, self.dst_covab_size, 
-                                output_projection=None, feed_previous=do_decode)
+                import pdb
+                pdb.set_trace()
+                return tf_seq2seq.embedding_attention_seq2seq(self.encoder_inputs, self.decoder_inputs, self.cell, self.src_vocab_size, self.dst_vocab_size, feed_previous=do_decode)
+            self.seq_func = seq2seq_func
         else:
             print "Custom"
             seq_func = attention_seq2seq
@@ -143,9 +148,15 @@ class NMT_Model(object):
     def define_train_ops(self):
         if self.forward_only is True:
             print "implement this part when we're ready for results"
+            if self.func_type == "attention":
+                self.outputs, self.losses = tf_seq2seq.model_with_buckets(self.encoder_inputs, self.decoder_inputs, targets, self.target_weights, self.buckets, self.dst_vocab_size, lambda x, y: self.seq_func(x, y, True), softmax_loss_function=self.loss_func)
+            # Custom
+            else:
+                print "implement this part for custom seq2seq"
+
         else:
             if self.func_type == "attention":
-                self.outputs, self.losses = tf_seq2seq.model_with_buckets(self.encoder_inputs, self.decoder_inputs, targets, self.target_weights, self.buckets, self.dst_vocab_size, lambda x, y: self.seq_func(x, y, False), softmax_loss_function=self.loss_func)
+                self.outputs, self.losses = tf_seq2seq.model_with_buckets(self.encoder_inputs, self.decoder_inputs, self.targets, self.target_weights, self.buckets, lambda x, y: self.seq_func(x, y, False), softmax_loss_function=self.loss_func)
             # Custom
             else:
                 print "implement this part for custom seq2seq"
@@ -162,7 +173,7 @@ class NMT_Model(object):
                 clipped_grads, norm = tf.clip_by_global_norm(grads, self.max_grad_norm)
                 self.grad_norms.append(norm)
                 self.updates.append(optimizer.apply_gradients(zip(clipped_grads, params), global_step=self.global_step))
-        self.saver = tf.train.Saver(tf.all_variables())
+        self.saver = tf.train.Saver(tf.global_variables())
 
 
 
@@ -179,5 +190,86 @@ class NMT_Model(object):
             encoder_inputs, decoder_inputs : numpy array of token ids
             bucket_id: which bucket to use
         """
+            # Check if the sizes match.
+        encoder_size, decoder_size = self.buckets[bucket_id]
+        if len(encoder_inputs) != encoder_size:
+            raise ValueError("Encoder length must be equal to the one in bucket," 
+                            " %d != %d." % (len(encoder_inputs), encoder_size))
+        if len(decoder_inputs) != decoder_size:
+            raise ValueError("Decoder length must be equal to the one in bucket,"
+                            " %d != %d." % (len(decoder_inputs), decoder_size))
+        if len(target_weights) != decoder_size:
+            raise ValueError("Weights length must be equal to the one in bucket,"
+                            " %d != %d." % (len(target_weights), decoder_size))
 
+        # Input feed: encoder inputs, decoder inputs, target_weights, as provided.
+        input_feed = {}
+        for l in xrange(encoder_size):
+            input_feed[self.encoder_inputs[l].name] = encoder_inputs[l]
+        for l in xrange(decoder_size):
+            input_feed[self.decoder_inputs[l].name] = decoder_inputs[l]
+            input_feed[self.target_weights[l].name] = target_weights[l]
 
+        # Since our targets are decoder inputs shifted by one, we need one more.
+        last_target = self.decoder_inputs[decoder_size].name
+        input_feed[last_target] = np.zeros([self.batch_size], dtype=np.int32)
+
+        # Output feed: depends on whether we do a backward step or not.
+        if not forward_only:
+            output_feed = [self.updates[bucket_id],  # Update Op that does SGD.
+                            self.grad_norms[bucket_id],  # Gradient norm.
+                            self.losses[bucket_id]]  # Loss for this batch.
+        else:
+            output_feed = [self.losses[bucket_id]]  # Loss for this batch.
+            for l in xrange(decoder_size):  # Output logits.
+                output_feed.append(self.outputs[bucket_id][l])
+
+        outputs = session.run(output_feed, input_feed)
+        if not forward_only:
+            return outputs[1], outputs[2], None  # Gradient norm, loss, no outputs.
+        else:
+            return None, outputs[0], outputs[1:]  # No gradient norm, loss, outputs.
+
+    def get_batch(self, data, bucket_id):
+        """
+        Get a random batch of data from the specified step.
+        """
+            # Get a random batch of encoder and decoder inputs from data,
+        # pad them if needed, reverse encoder inputs and add GO to decoder.
+        for _ in xrange(self.batch_size):
+            encoder_input, decoder_input = random.choice(data[bucket_id])
+
+            # Encoder inputs are padded and then reversed.
+            encoder_pad = [data_utils.PAD_ID] * (encoder_size - len(encoder_input))
+            encoder_inputs.append(list(reversed(encoder_input + encoder_pad)))
+
+            # Decoder inputs get an extra "GO" symbol, and are padded then.
+            decoder_pad_size = decoder_size - len(decoder_input) - 1
+            decoder_inputs.append([data_utils.GO_ID] + decoder_input +
+                                    [data_utils.PAD_ID] * decoder_pad_size)
+
+            # Now we create batch-major vectors from the data selected above.
+            batch_encoder_inputs, batch_decoder_inputs, batch_weights = [], [], []
+
+        # Batch encoder inputs are just re-indexed encoder_inputs.
+        for length_idx in xrange(encoder_size):
+            batch_encoder_inputs.append(
+                np.array([encoder_inputs[batch_idx][length_idx]
+                        for batch_idx in xrange(self.batch_size)], dtype=np.int32))
+
+        # Batch decoder inputs are re-indexed decoder_inputs, we create weights.
+        for length_idx in xrange(decoder_size):
+            batch_decoder_inputs.append(np.array([decoder_inputs[batch_idx][length_idx]
+                        for batch_idx in xrange(self.batch_size)], dtype=np.int32))
+
+            # Create target_weights to be 0 for targets that are padding.
+            batch_weight = np.ones(self.batch_size, dtype=np.float32)
+            for batch_idx in xrange(self.batch_size):
+                # We set weight to 0 if the corresponding target is a PAD symbol.
+                # The corresponding target is decoder_input shifted by 1 forward.
+                if length_idx < decoder_size - 1:
+                    target = decoder_inputs[batch_idx][length_idx + 1]
+                if length_idx == decoder_size - 1 or target == data_utils.PAD_ID:
+                    batch_weight[batch_idx] = 0.0
+                batch_weights.append(batch_weight)
+        return batch_encoder_inputs, batch_decoder_inputs, batch_weights

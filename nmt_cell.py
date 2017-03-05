@@ -27,7 +27,7 @@ class NMT_Cell_Generator(object):
         else:
             cell = Custom_Cell(self.size)
 
-        if num_layers > 1:
+        if self.num_layers > 1:
             cell = tf.nn.rnn_cell.MultiRNNCell([cell] * self.num_layers)
 
         return cell
