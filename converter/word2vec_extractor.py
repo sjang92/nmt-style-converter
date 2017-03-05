@@ -26,8 +26,13 @@ import tensorflow as tf
 
 # Step 1: Get the data, set the file_name
 #filename = "muchado_modern.snt.aligned"
-filename = "./data/dummy_corpus.from"
+directory = "./data/"
+file_name = "dummy_corpus.from"
+#file_name = "dummy_corpus.to"
 
+filename = directory+file_name
+token_filename = filename+".tokens"
+id_filename=filename+".ids"
 
 # Read the data into a list of strings.
 def read_data(filename):
@@ -45,11 +50,21 @@ print('Data size', len(words))
 vocabulary_size = 40000
 
 def build_dataset(words):
-    count = [['UNK', -1]]
+    count = [['_PAD', -1], ['_GO',-1], ['_EOS',-1], ['_UNK', -1]]
     count.extend(collections.Counter(words).most_common(vocabulary_size - 1))
     dictionary = dict()
+
+    # token_ids start from 0
+    token_ids = ['_PAD', '_GO', '_EOS', '_UNK']
+
     for word, _ in count:
+        #if word in token_ids:
+        #    continue
         dictionary[word] = len(dictionary)
+        if word in token_ids:
+            continue
+        token_ids.append(word)
+
     data = list()
     unk_count = 0
     for word in words:
@@ -61,11 +76,32 @@ def build_dataset(words):
             unk_count += 1
         data.append(index)
 
-    count[0][1] = unk_count
+    count[3][1] = unk_count
     reverse_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
-    return data, count, dictionary, reverse_dictionary
+    return data, count, dictionary, reverse_dictionary, token_ids
 
-data, count, dictionary, reverse_dictionary = build_dataset(words)
+data, count, dictionary, reverse_dictionary, token_ids = build_dataset(words)
+
+# save token_ids 
+f = open(token_filename, 'w')
+
+for word in token_ids:
+    f.write(word)
+    f.write("\n")
+
+f.close()
+
+# convert speech file to token file
+id_file = open(id_filename, 'w')
+with open(filename, 'r') as orig_file:
+    for line in orig_file:
+        curr_words = line.split()
+        curr_tokens = [str(dictionary[word]) for word in curr_words]
+        for token in curr_tokens:
+            id_file.write(token)
+            id_file.write(' ')
+        id_file.write('\n')
+
 del words  # Hint to reduce memory.
 print('Most common words (+UNK)', count[:5])
 print('Sample data', data[:10], [reverse_dictionary[i] for i in data[:10]])
@@ -207,6 +243,3 @@ with tf.Session(graph=graph) as session:
                 """
     final_embeddings = normalized_embeddings.eval()
     print final_embeddings
-
-except ImportError:
-  print("Please install sklearn, matplotlib, and scipy to visualize embeddings.")

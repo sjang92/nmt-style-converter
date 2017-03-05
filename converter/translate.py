@@ -45,6 +45,11 @@ import tensorflow as tf
 import data_utils
 import seq2seq_model
 
+from_train_data_path= "./data/dummy_corpus.from.ids"
+to_train_data_path= "./data/dummy_corpus.to.ids"
+from_dev_data_path = from_train_data_path
+to_dev_data_path = to_train_data_path
+
 
 tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
 tf.app.flags.DEFINE_float("learning_rate_decay_factor", 0.99,
@@ -167,10 +172,7 @@ def train():
                 FLAGS.from_vocab_size,
                 FLAGS.to_vocab_size)
     else:
-            # Prepare WMT data.
-            print("Preparing WMT data in %s" % FLAGS.data_dir)
-            from_train, to_train, from_dev, to_dev, _, _ = data_utils.prepare_wmt_data(
-                    FLAGS.data_dir, FLAGS.from_vocab_size, FLAGS.to_vocab_size)
+        assert False, "Should never come here"
 
     with tf.Session() as sess:
         # Create model.
