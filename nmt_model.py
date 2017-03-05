@@ -100,12 +100,16 @@ class NMT_Model(object):
             w_t = tf.transpose(w)
             b = tf.get_variable("proj_b", [self.dst_vocab_size])
 
+
             self.output_projection = (w, b)
             # TODO : figure out if we need to use CPU
             def sampled_loss(inputs, labels):
                 with tf.device("/cpu:0"):
+										local_w_t = tf.cast(w_t,float32)
+										local_w = tf.cast(w, float32)
+                    local_b = tf.cast(b, float32) 
                     labels = tf.reshape(labels, [-1, 1])
-                    return tf.nn.sampled_softmax_loss(w_t, b, inputs, labels, self.num_samples, self.dst_vocab_size)
+                    return tf.cast(tf.nn.sampled_softmax_loss(w_t, b, inputs, labels, self.num_samples, self.dst_vocab_size), dtype)
 
         self.loss_func = sampled_loss
 
