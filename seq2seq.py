@@ -107,8 +107,7 @@ def attention_decoder(decoder_inputs, initial_state, attention_states, cell,
 
 def attention_seq2seq(encoder_inputs, decoder_inputs, cell, 
                       num_encoder_symbols, num_decoder_symbols, encoder_dim, decoder_dim,
-                      num_heads=1, embedding_init=None, output_projection=None, 
-                      feed_previous=False, dtype=tf.float32, scope=None, initial_state_attention=None):
+                      num_heads=1, src_embedding_init=None, dst_embedding_init=None,output_projection=None,feed_previous=False, dtype=tf.float32, scope=None, initial_state_attention=None):
     """
     embedding seq2seq function with attention
 
@@ -123,7 +122,7 @@ def attention_seq2seq(encoder_inputs, decoder_inputs, cell,
 
     with tf.variable_scope(scope or 'attention_seq2seq'):
         # Run Encoder first
-        encoder_cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, num_encoder_symbols, encoder_dim, embedding_init)
+        encoder_cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, num_encoder_symbols, encoder_dim, src_embedding_init)
         encoder_ouputs, encoder_state = tf.nn.rnn(encoder_cell, encoder_inputs, dtype=dtype)
 
         # Concatenate encoder outputs for attention
@@ -136,5 +135,44 @@ def attention_seq2seq(encoder_inputs, decoder_inputs, cell,
                                 output_size=None, output_projection=output_projection, 
                                 feed_previous=feed_previous, 
                                 initial_state_attention=initial_state_attention, 
-                                embedding_init=embedding_init)
+                                embedding_init=dst_embedding_init)
 
+
+def sequence_loss_by_example(logits, targets, weights, softmax_loss_function=None):
+    assert len(logits) == len(targets), 'some problem'
+    assert len(weights) == len(logits), 'more problem'
+    assert softmax_loss_function is not None, 'even though the function accepts None, force it'
+
+    log_perp_list = []
+    for logit, target, weight in zip(logits, targets, weights):
+        crossent = softmax_loss_function(logit, target)
+        log_perp_list.append(crossent * weight)
+    log_perps = tf.add_n(log_perp_list)
+    total_size = tf.add_n(weights) + 1e-12 # avoid division by 0
+    log_perps = log_perps / total_size
+    return log_perps
+
+def sequence_loss(logits, targets, weights, softmax_loss_function=None):
+    cost = tf.reduce_sum(sequence_loss_by_example(logits, targets, weights, softmax_loss_function=softmax_loss_function))
+    batch_size = targets.get_shape()[0].value
+    return cost/tf.cast(batch_size, tf.float32)
+
+def bucket_model(encoder_inputs, decoder_inputs, targets, weights, buckets, seq2seq, softmax_loss_function=None, per_example_loss=None, name=None):
+    """
+    Returns a seq2seq model with bucketing. This should be the only entry into 
+    this module from outside. All other functions should never be called 
+    explicitly. (attention_seq2seq2) can be passed in as a param
+    """
+
+    assert len(encoder_inputs) >= buckets[-1][0], "encoder input length must be longer"
+    assert len(targets) >= buckets[-1][1], "same"
+
+    losses = []
+    outputs = []
+    # TODO : Do we need to define operation scope here?
+    for j, bucket in enumerate(buckets):
+        with tf.variable_scope(tf.get_variable_scope(), reuse=True if j>0 else None):
+            bucket_outputs, _ = seq2seq(encoder_inputs[:bucket[0]], decoder_inputs[:bucket[1]])
+            outputs.append(bucket_outputs)
+
+            losses.append(sequence_loss(outputs[-1], targets[:bucket[1]], weights[:bucket[1]], softmax_loss_function=softmax_loss_funcion))
