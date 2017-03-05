@@ -153,6 +153,7 @@ class NMT_Model(object):
             # Custom
             else:
                 print "implement this part for custom seq2seq"
+                self.outputs, self.losses = bucket_model(self.encoder_inputs, self.decoder_inputs, self.targets, self.target_weights, self.buckets, lambda x, y: self.seq_func(x, y, True), softmax_loss_function=self.loss_func)
 
         else:
             if self.func_type == "attention":
@@ -160,6 +161,9 @@ class NMT_Model(object):
             # Custom
             else:
                 print "implement this part for custom seq2seq"
+                self.outputs, self.losses = bucket_model(self.encoder_inputs, self.decoder_inputs, self.targets, self.target_weights, self.buckets, lambda x, y: self.seq_func(x, y, False), softmax_loss_function=self.loss_func)
+
+
 
         # Train op is configured only when we do backprop
         params = tf.trainable_variables()
