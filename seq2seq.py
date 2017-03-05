@@ -122,8 +122,13 @@ def attention_seq2seq(encoder_inputs, decoder_inputs, cell,
 
     with tf.variable_scope(scope or 'attention_seq2seq'):
         # Run Encoder first
-        encoder_cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, num_encoder_symbols, encoder_dim, src_embedding_init)
-        encoder_ouputs, encoder_state = tf.nn.rnn(encoder_cell, encoder_inputs, dtype=dtype)
+        if src_embedding_init is not None:
+            encoder_cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, num_encoder_symbols, encoder_dim, src_embedding_init)
+        else:
+            encoder_cell = tf.nn.rnn_cell.EmbeddingWrapper(cell, num_encoder_symbols, encoder_dim)
+        import pdb
+        pdb.set_trace()
+        encoder_ouputs, encoder_state = tf.nn.dynamic_rnn(encoder_cell, encoder_inputs, dtype=dtype)
 
         # Concatenate encoder outputs for attention
         top_states = [tf.reshape(e, [-1, 1, cell.output_size]) for e in encoder_outputs]

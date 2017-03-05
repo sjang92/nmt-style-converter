@@ -136,6 +136,12 @@ class NMT_Model(object):
         else:
             print "Custom"
             seq_func = attention_seq2seq
+
+            self.encoder_dim = self.size
+            self.decoder_dim = self.size
+            self.src_embedding_mtrx = None
+            self.dst_embedding_mtrx = None
+
             def seq2seq_func(encoder_inputs, decoder_inputs, do_decode):
                 return seq_func(self.encoder_inputs, self.decoder_inputs, self.cell, 
                                 self.src_vocab_size, self.dst_vocab_size, self.encoder_dim, 
