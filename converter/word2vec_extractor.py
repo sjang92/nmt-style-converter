@@ -27,7 +27,9 @@ import tensorflow as tf
 # Step 1: Get the data, set the file_name
 #filename = "muchado_modern.snt.aligned"
 directory = "./data/"
-file_name = "dummy_corpus.from"
+#file_name = "dummy_corpus.from"
+#file_name = "merchant_modern.snt.aligned"
+file_name = "merchant_original.snt.aligned"
 #file_name = "dummy_corpus.to"
 
 filename = directory+file_name
