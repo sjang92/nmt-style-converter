@@ -127,12 +127,13 @@ class NMT_Model(object):
                     local_w = tf.cast(w, tf.float32)
                     local_b = tf.cast(b, tf.float32) 
                     labels = tf.reshape(labels, [-1, 1])
+                    local_inputs = tf.cast(inputs, tf.float32)
                     return tf.cast(
                         tf.nn.sampled_softmax_loss(
                                 weights=local_w_t,
                                 biases=local_b,
                                 labels=labels,
-                                inputs=local_inputs,
+                                inputs=inputs,
                                 num_sampled=num_samples,
                                 num_classes=self.target_vocab_size),
                         self.dtype)
