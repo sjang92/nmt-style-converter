@@ -793,7 +793,9 @@ def embedding_attention_seq2seq(encoder_inputs,
                                 feed_previous=False,
                                 dtype=None,
                                 scope=None,
-                                initial_state_attention=False):
+                                initial_state_attention=False,
+                                encoder_embeddings=None,
+                                decoder_embeddings=None):  # CHANGES - adding embeddings for input/output
   """Embedding sequence-to-sequence model with attention.
 
   This model first embeds encoder_inputs by a newly created embedding (of shape
@@ -838,16 +840,31 @@ def embedding_attention_seq2seq(encoder_inputs,
       state: The state of each decoder cell at the final time-step.
         It is a 2D Tensor of shape [batch_size x cell.state_size].
   """
+  # CHANGE
+  if encoder_embeddings:
+    assert num_encoder_symbols == encoder_embeddings.get_shape()[0].value
+  if decoder_embeddings:
+    assert num_decoder_symbols == decoder_embeddings.get_shape()[0].value
+  
   with variable_scope.variable_scope(
       scope or "embedding_attention_seq2seq", dtype=dtype) as scope:
     dtype = scope.dtype
     # Encoder.
-    encoder_cell = core_rnn_cell.EmbeddingWrapper(
-        cell,
-        embedding_classes=num_encoder_symbols,
-        embedding_size=embedding_size)
-    encoder_outputs, encoder_state = core_rnn.static_rnn(
-        encoder_cell, encoder_inputs, dtype=dtype)
+    # CHANGE include encoding
+    if encoder_embeddings:
+      encoder_cell = core_rnn_cell.EmbeddingWrapper(
+          cell,
+          embedding_classes=num_encoder_symbols,
+          embedding_size=embedding_size,
+          initializer=tf.constant_initializer(encoder_embeddings)))
+    else:
+      encoder_cell = core_rnn_cell.EmbeddingWrapper(
+          cell,
+          embedding_classes=num_encoder_symbols,
+          embedding_size=embedding_size)
+
+    encoder_outputs, encoder_state = core_rnn.static_bidirectional_rnn(
+        encoder_cell, encoder_cell, encoder_inputs, dtype=dtype)
 
     # First calculate a concatenation of encoder outputs to put attention on.
     top_states = [
@@ -1123,7 +1140,7 @@ def model_with_buckets(encoder_inputs,
                        seq2seq,
                        softmax_loss_function=None,
                        per_example_loss=False,
-                       name=None):
+                       name=None): 
   """Create a sequence-to-sequence model with support for bucketing.
 
   The seq2seq argument is a function that defines a sequence-to-sequence model,
