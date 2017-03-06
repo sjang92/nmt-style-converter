@@ -1,6 +1,9 @@
 import tensorflow as tf
 #from tensorflow.nn import seq2seq as tf_seq2seq
-
+import random
+import numpy as np
+from six.moves import xrange
+import data_utils
 class NMT_Model(object):
 
     def __init__(self,
@@ -40,6 +43,10 @@ class NMT_Model(object):
         self.learning_rate_decay_op = self.learning_rate.assign(self.learning_rate * learning_rate_decay_factor)
         self.global_step = tf.Variable(0, trainable=False)
         self.forward_only = forward_only
+
+        self.max_gradient_norm = max_gradient_norm
+        self.output_projection=None
+        self.loss_func = None
 
     """
     ====================== LIST OF CONFIG METHODS ==============================
@@ -107,8 +114,6 @@ class NMT_Model(object):
             self.decoder_inputs.append(tf.placeholder(tf.int32, shape=[None], name="decoder{0}".format(i)))
             self.target_weights.append(tf.placeholder(self.dtype, shape=[None], name="weight{0}".format(i)))
 
-        # Our targets are decoder inputs shifted by one.
-        self.targets = [self.decoder_inputs[i + 1] for i in xrange(len(self.decoder_inputs) - 1)]
 
 
     def define_loss_func(self, loss_type='sampled'):
@@ -118,25 +123,22 @@ class NMT_Model(object):
             w_t = tf.get_variable("proj_w", [self.target_vocab_size, self.size], dtype=self.dtype)
             w = tf.transpose(w_t)
             b = tf.get_variable("proj_b", [self.target_vocab_size], dtype=self.dtype)
-
-
             self.output_projection = (w, b)
+
             # TODO : figure out if we need to use CPU
-            def sampled_loss(inputs, labels):
+            def sampled_loss(labels, inputs):
                 with tf.device("/cpu:0"):
                     local_w_t = tf.cast(w_t, tf.float32)
-                    local_w = tf.cast(w, tf.float32)
                     local_b = tf.cast(b, tf.float32) 
                     local_inputs = tf.cast(inputs, tf.float32)
                     labels = tf.reshape(labels, [-1, 1])
-                    local_inputs = tf.cast(inputs, tf.float32)
                     return tf.cast(
                         tf.nn.sampled_softmax_loss(
                                 weights=local_w_t,
                                 biases=local_b,
                                 labels=labels,
-                                inputs=inputs,
-                                num_sampled=num_samples,
+                                inputs=local_inputs,
+                                num_sampled=self.num_samples,
                                 num_classes=self.target_vocab_size),
                         self.dtype)
             self.loss_func = sampled_loss
@@ -167,7 +169,7 @@ class NMT_Model(object):
             print "Configured seq func as attention"
             #seq_func = tf_seq2seq.embedding_attention_seq2seq
             def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
-                return tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(self.encoder_inputs, self.decoder_inputs, self.cell, num_encoder_symbols=self.source_vocab_size, num_decoder_symbols=self.target_vocab_size, embedding_size=self.size, output_projection=self.output_projection, feed_previous=do_decode, dtype=self.dtype)
+                return tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(encoder_inputs, decoder_inputs, self.cell, num_encoder_symbols=self.source_vocab_size, num_decoder_symbols=self.target_vocab_size, embedding_size=self.size, output_projection=self.output_projection, feed_previous=do_decode, dtype=self.dtype)
             self.seq2seq_f = seq2seq_f
         else:
             pass
@@ -187,6 +189,9 @@ class NMT_Model(object):
             #                     output_projection=None, feed_previous=do_decode)
 
     def define_train_ops(self):
+        # Our targets are decoder inputs shifted by one.
+        targets = [self.decoder_inputs[i + 1] for i in xrange(len(self.decoder_inputs) - 1)]
+
         if self.forward_only:
             self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
                     self.encoder_inputs, self.decoder_inputs, targets,
@@ -204,16 +209,14 @@ class NMT_Model(object):
             #pdb.set_trace()
 
             self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
-                    self.encoder_inputs, self.decoder_inputs, self.targets,
+                    self.encoder_inputs, self.decoder_inputs, targets,
                     self.target_weights, self.buckets,
                     lambda x, y: self.seq2seq_f(x, y, False),
                     softmax_loss_function=self.loss_func)
-        
 
         # Gradients and SGD update operation for training the model.
         params = tf.trainable_variables()
-        
-        if not forward_only:
+        if not self.forward_only:
             self.gradient_norms = []
             self.updates = []
             opt = tf.train.GradientDescentOptimizer(self.learning_rate)

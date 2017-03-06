@@ -172,8 +172,8 @@ class Seq2SeqModel(object):
                             for output in self.outputs[b]
                     ]
         else:
-            #import pdb
-            #pdb.set_trace()
+            import pdb
+            pdb.set_trace()
             self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
                     self.encoder_inputs, self.decoder_inputs, targets,
                     self.target_weights, buckets,
