@@ -228,38 +228,6 @@ class NMT_Model(object):
                         zip(clipped_gradients, params), global_step=self.global_step))
 
         self.saver = tf.train.Saver(tf.global_variables())
-        # if self.forward_only is True:
-        #     print "implement this part when we're ready for results"
-        #     if self.func_type == "attention":
-        #         self.outputs, self.losses = tf_seq2seq.model_with_buckets(self.encoder_inputs, self.decoder_inputs, targets, self.target_weights, self.buckets, self.target_vocab_size, lambda x, y: self.seq_func(x, y, True), softmax_loss_function=self.loss_func)
-        #     # Custom
-        #     else:
-        #         print "implement this part for custom seq2seq"
-        #         self.outputs, self.losses = bucket_model(self.encoder_inputs, self.decoder_inputs, self.targets, self.target_weights, self.buckets, lambda x, y: self.seq_func(x, y, True), softmax_loss_function=self.loss_func)
-
-        # else:
-        #     if self.func_type == "attention":
-        #         self.outputs, self.losses = tf_seq2seq.model_with_buckets(self.encoder_inputs, self.decoder_inputs, self.targets, self.target_weights, self.buckets, lambda x, y: self.seq_func(x, y, False), softmax_loss_function=self.loss_func)
-        #     # Custom
-        #     else:
-        #         print "implement this part for custom seq2seq"
-        #         self.outputs, self.losses = bucket_model(self.encoder_inputs, self.decoder_inputs, self.targets, self.target_weights, self.buckets, lambda x, y: self.seq_func(x, y, False), softmax_loss_function=self.loss_func)
-
-
-        # # Train op is configured only when we do backprop
-        # params = tf.trainable_variables()
-        # if self.forward_only is not True:
-        #     self.grad_norms = []
-        #     self.updates = []
-        #     optimizer = tf.train.AdamOptimizer(self.lr)
-
-        #     for b in xrange(len(self.buckets)):
-        #         grads = tf.gradients(self.losses[b], params)
-        #         clipped_grads, norm = tf.clip_by_global_norm(grads, self.max_grad_norm)
-        #         self.grad_norms.append(norm)
-        #         self.updates.append(optimizer.apply_gradients(zip(clipped_grads, params), global_step=self.global_step))
-        # self.saver = tf.train.Saver(tf.global_variables())
-
 
 
     """
@@ -359,5 +327,8 @@ class NMT_Model(object):
                     target = decoder_inputs[batch_idx][length_idx + 1]
                 if length_idx == decoder_size - 1 or target == data_utils.PAD_ID:
                     batch_weight[batch_idx] = 0.0
-                batch_weights.append(batch_weight)
+            batch_weights.append(batch_weight)
+
+        #import pdb 
+        #pdb.set_trace()
         return batch_encoder_inputs, batch_decoder_inputs, batch_weights
