@@ -53,8 +53,8 @@ class NMT_Model(object):
         define_embedding_mtrx
         define_nmt_cell
         define_nmt_buckets
-        define_loss_func
         define_nmt_seq_func
+        define_loss_func
         define_train_ops
 
     """
@@ -114,9 +114,9 @@ class NMT_Model(object):
     def define_loss_func(self, loss_type='sampled'):
         if loss_type == 'sampled':
             assert self.num_samples < self.target_vocab_size, '# samples should be less than |V|'
-            w = tf.get_variable("proj_w", [self.size, self.target_vocab_size])
-            w_t = tf.transpose(w)
-            b = tf.get_variable("proj_b", [self.target_vocab_size])
+            w_t = tf.get_variable("proj_w", [self.target_vocab_size, self.size], dtype=self.dtype)
+            w = tf.transpose(w_t)
+            b = tf.get_variable("proj_b", [self.target_vocab_size], dtype=self.dtype)
 
 
             self.output_projection = (w, b)
@@ -126,6 +126,7 @@ class NMT_Model(object):
                     local_w_t = tf.cast(w_t, tf.float32)
                     local_w = tf.cast(w, tf.float32)
                     local_b = tf.cast(b, tf.float32) 
+                    local_inputs = tf.cast(inputs, tf.float32)
                     labels = tf.reshape(labels, [-1, 1])
                     return tf.cast(
                         tf.nn.sampled_softmax_loss(
