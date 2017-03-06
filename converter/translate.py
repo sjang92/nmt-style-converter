@@ -127,7 +127,9 @@ def read_data(source_path, target_path, max_size=None):
 def create_model(session, forward_only):
     """Create translation model and initialize or load parameters in session."""
     dtype = tf.float16 if FLAGS.use_fp16 else tf.float32
-    model = seq2seq_model.Seq2SeqModel(
+    import nmt_model
+
+    model = nmt_model.NMT_Model(
             FLAGS.from_vocab_size,
             FLAGS.to_vocab_size,
             _buckets,
@@ -139,6 +141,13 @@ def create_model(session, forward_only):
             FLAGS.learning_rate_decay_factor,
             forward_only=forward_only,
             dtype=dtype)
+
+    model.define_nmt_cell(FLAGS.size)
+    model.define_nmt_buckets(_buckets)
+    model.define_loss_func()
+    model.define_nmt_seq_func("attention")
+    model.define_train_ops()
+
     ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
     if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
         print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
