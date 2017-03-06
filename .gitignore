@@ -2,3 +2,5 @@
 *.log
 *.swp
 .DS_Store
+./converter/data/*
+./converter/checkpoint/*

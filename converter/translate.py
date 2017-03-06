@@ -153,6 +153,7 @@ def create_model(session, forward_only):
     if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
         print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
         model.saver.restore(session, ckpt.model_checkpoint_path)
+        #model.saver.restore(session, './checkpoint/translate.ckpt-16700')
     else:
         print("Created model with fresh parameters.")
         session.run(tf.global_variables_initializer())
@@ -261,12 +262,19 @@ def decode():
         model.batch_size = 1    # We decode one sentence at a time.
 
         # Load vocabularies.
+        """
         en_vocab_path = os.path.join(FLAGS.data_dir,
                                                                  "vocab%d.from" % FLAGS.from_vocab_size)
         fr_vocab_path = os.path.join(FLAGS.data_dir,
                                                                  "vocab%d.to" % FLAGS.to_vocab_size)
+                                                                 """
+        en_vocab_path = "./data/all_modern.vocab"
+        fr_vocab_path = "./data/all_original.vocab"
         en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
         _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
+
+        import pdb
+        pdb.set_trace()
 
         # Decode from standard input.
         sys.stdout.write("> ")
@@ -275,14 +283,16 @@ def decode():
         while sentence:
             # Get token-ids for the input sentence.
             token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), en_vocab)
+            #print "TOKENS : "
+            #print token_ids
             # Which bucket does it belong to?
             bucket_id = len(_buckets) - 1
             for i, bucket in enumerate(_buckets):
                 if bucket[0] >= len(token_ids):
                     bucket_id = i
                     break
-            else:
-                logging.warning("Sentence truncated: %s", sentence)
+                else:
+                    logging.warning("Sentence truncated: %s", sentence)
 
             # Get a 1-element batch to feed the sentence to the model.
             encoder_inputs, decoder_inputs, target_weights = model.get_batch(
@@ -307,8 +317,17 @@ def self_test():
     with tf.Session() as sess:
         print("Self-test for neural translation model.")
         # Create model with vocabularies of 10, 2 small buckets, 2 layers of 32.
-        model = seq2seq_model.Seq2SeqModel(10, 10, [(3, 3), (6, 6)], 32, 2,
+        import nmt_model
+        model = nmt_model.NMT_Model(10, 10, [(3, 3), (6, 6)], 32, 2,
+        #model = seq2seq_model.Seq2SeqModel(10, 10, [(3, 3), (6, 6)], 32, 2,
                                                                              5.0, 32, 0.3, 0.99, num_samples=8)
+        model.define_loss_func()
+        model.define_nmt_cell(None)
+
+        model.define_nmt_seq_func("attention")
+        model.define_nmt_buckets(None)
+        model.define_train_ops()
+
         sess.run(tf.global_variables_initializer())
 
         # Fake data set for both the (3, 3) and (6, 6) bucket.
@@ -318,9 +337,29 @@ def self_test():
             bucket_id = random.choice([0, 1])
             encoder_inputs, decoder_inputs, target_weights = model.get_batch(
                     data_set, bucket_id)
-            model.step(sess, encoder_inputs, decoder_inputs, target_weights,
+            _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs, target_weights,
                                  bucket_id, False)
 
+        for data in data_set:
+            token_ids = data[0]
+            bucket_id = len(_buckets) - 1
+            for i, bucket in enumerate(_buckets):
+                if bucket[0] >= len(data[0]):
+                    bucket_id = i
+                    break
+                else:
+                    logging.warning("Sentence truncated: %s", sentence)
+
+            # Get a 1-element batch to feed the sentence to the model.
+            encoder_inputs, decoder_inputs, target_weights = model.get_batch({bucket_id: [(token_ids, [])]}, bucket_id)
+            # Get output logits for the sentence.
+            _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs, target_weights, bucket_id, True)
+            # This is a greedy decoder - outputs are just argmaxes of output_logits.
+            outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
+            # If there is an EOS symbol in outputs, cut them at that point.
+            if data_utils.EOS_ID in outputs: outputs = outputs[:outputs.index(data_utils.EOS_ID)]
+            print(outputs)
+            print(data[1])
 
 def main(_):
     if FLAGS.self_test:
