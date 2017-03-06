@@ -1,12 +1,6 @@
 import tensorflow as tf
 #from tensorflow.nn import seq2seq as tf_seq2seq
 
-tf_seq2seq = tf.nn.seq2seq
-
-
-from nmt_cell import  NMT_Cell_Generator
-from seq2seq import attention_seq2seq, bucket_model
-
 class NMT_Model(object):
 
     def __init__(self,
@@ -39,10 +33,13 @@ class NMT_Model(object):
         self.batch_size = batch_size
         self.num_layers = num_layers
         self.num_samples = num_samples
+        self.use_lstm = use_lstm
+        self.dtype = dtype
 
         self.learning_rate = tf.Variable(float(learning_rate), trainable=False, dtype=dtype)
         self.learning_rate_decay_op = self.learning_rate.assign(self.learning_rate * learning_rate_decay_factor)
         self.global_step = tf.Variable(0, trainable=False)
+        self.forward_only = forward_only
 
     """
     ====================== LIST OF CONFIG METHODS ==============================
@@ -85,7 +82,7 @@ class NMT_Model(object):
 				# Create the internal multi-layer cell for our RNN.
         def single_cell():
             return tf.contrib.rnn.GRUCell(self.size)
-        if use_lstm:
+        if self.use_lstm:
             def single_cell():
                 return tf.contrib.rnn.BasicLSTMCell(self.size)
         self.cell = single_cell()
@@ -143,7 +140,7 @@ class NMT_Model(object):
             assert False, "sampled"
 
 
-        self.loss_func = self.sampled_loss
+        self.loss_func = sampled_loss
 
         if self.forward_only:
             self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
