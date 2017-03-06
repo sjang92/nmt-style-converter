@@ -128,7 +128,7 @@ def create_model(session, forward_only):
     """Create translation model and initialize or load parameters in session."""
     dtype = tf.float16 if FLAGS.use_fp16 else tf.float32
     import nmt_model
-
+    #model = seq2seq_model.Seq2SeqModel(
     model = nmt_model.NMT_Model(
             FLAGS.from_vocab_size,
             FLAGS.to_vocab_size,
@@ -142,10 +142,10 @@ def create_model(session, forward_only):
             forward_only=forward_only,
             dtype=dtype)
 
+    model.define_loss_func()
     model.define_nmt_cell(FLAGS.size)
     model.define_nmt_buckets(_buckets)
     model.define_nmt_seq_func("attention")
-    model.define_loss_func()
     model.define_train_ops()
 
     ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)

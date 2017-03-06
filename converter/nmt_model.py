@@ -112,8 +112,9 @@ class NMT_Model(object):
 
 
     def define_loss_func(self, loss_type='sampled'):
-        if loss_type == 'sampled':
-            assert self.num_samples < self.target_vocab_size, '# samples should be less than |V|'
+        #if loss_type == 'sampled':
+        if self.num_samples > 0 and self.num_samples < self.target_vocab_size:
+            #assert self.num_samples < self.target_vocab_size, '# samples should be less than |V|'
             w_t = tf.get_variable("proj_w", [self.target_vocab_size, self.size], dtype=self.dtype)
             w = tf.transpose(w_t)
             b = tf.get_variable("proj_b", [self.target_vocab_size], dtype=self.dtype)
@@ -138,31 +139,13 @@ class NMT_Model(object):
                                 num_sampled=num_samples,
                                 num_classes=self.target_vocab_size),
                         self.dtype)
+            self.loss_func = sampled_loss
         else:
             assert False, "sampled"
 
 
-        self.loss_func = sampled_loss
+        #self.loss_func = sampled_loss
 
-        if self.forward_only:
-            self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
-                    self.encoder_inputs, self.decoder_inputs, targets,
-                    self.target_weights, self.buckets, lambda x, y: self.seq2seq_f(x, y, True),
-                    softmax_loss_function=self.loss_func)
-            # If we use output projection, we need to project outputs for decoding.
-            if self.output_projection is not None:
-                for b in xrange(len(self.buckets)):
-                    self.outputs[b] = [
-                            tf.matmul(output, self.output_projection[0]) + self.output_projection[1]
-                            for output in self.outputs[b]
-                    ]
-        else:
-            self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
-                    self.encoder_inputs, self.decoder_inputs, self.targets,
-                    self.target_weights, self.buckets,
-                    lambda x, y: self.seq2seq_f(x, y, False),
-                    softmax_loss_function=self.loss_func)
-        
 
 
     def define_nmt_seq_func(self, func_type):
@@ -204,6 +187,29 @@ class NMT_Model(object):
             #                     output_projection=None, feed_previous=do_decode)
 
     def define_train_ops(self):
+        if self.forward_only:
+            self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
+                    self.encoder_inputs, self.decoder_inputs, targets,
+                    self.target_weights, self.buckets, lambda x, y: self.seq2seq_f(x, y, True),
+                    softmax_loss_function=self.loss_func)
+            # If we use output projection, we need to project outputs for decoding.
+            if self.output_projection is not None:
+                for b in xrange(len(self.buckets)):
+                    self.outputs[b] = [
+                            tf.matmul(output, self.output_projection[0]) + self.output_projection[1]
+                            for output in self.outputs[b]
+                    ]
+        else:
+            #import pdb
+            #pdb.set_trace()
+
+            self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
+                    self.encoder_inputs, self.decoder_inputs, self.targets,
+                    self.target_weights, self.buckets,
+                    lambda x, y: self.seq2seq_f(x, y, False),
+                    softmax_loss_function=self.loss_func)
+        
+
         # Gradients and SGD update operation for training the model.
         params = tf.trainable_variables()
         
