@@ -1,7 +1,7 @@
 import tensorflow as tf
 #from tensorflow.nn import seq2seq as tf_seq2seq
 
-import seq2seq as seq2seq
+import nmt_seq2seq as seq2seq
 import random
 import numpy as np
 from six.moves import xrange
@@ -173,15 +173,17 @@ class NMT_Model(object):
             #seq_func = tf_seq2seq.embedding_attention_seq2seq
             def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
                 return seq2seq.embedding_attention_seq2seq(encoder_inputs,
+                #return tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(encoder_inputs,
                     decoder_inputs, 
-                    self.cell, 
+                    #self.cell, 
+                    None,
                     num_encoder_symbols=self.source_vocab_size, 
                     num_decoder_symbols=self.target_vocab_size, 
                     embedding_size=self.size, 
                     output_projection=self.output_projection, 
                     feed_previous=do_decode, 
-                    dtype=self.dtype,
-                    encoder_embeddings=None)
+                    dtype=self.dtype)
+                    #encoder_embeddings=None)
             self.seq2seq_f = seq2seq_f
         else:
             pass
@@ -205,7 +207,7 @@ class NMT_Model(object):
         targets = [self.decoder_inputs[i + 1] for i in xrange(len(self.decoder_inputs) - 1)]
 
         if self.forward_only:
-            self.outputs, self.losses = seq2seq.model_with_buckets(
+            self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
                     self.encoder_inputs, self.decoder_inputs, targets,
                     self.target_weights, self.buckets, lambda x, y: self.seq2seq_f(x, y, True),
                     softmax_loss_function=self.loss_func)
@@ -220,7 +222,7 @@ class NMT_Model(object):
             #import pdb
             #pdb.set_trace()
 
-            self.outputs, self.losses = seq2seq.model_with_buckets(
+            self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
                     self.encoder_inputs, self.decoder_inputs, targets,
                     self.target_weights, self.buckets,
                     lambda x, y: self.seq2seq_f(x, y, False),
@@ -231,6 +233,7 @@ class NMT_Model(object):
         if not self.forward_only:
             self.gradient_norms = []
             self.updates = []
+            #opt = tf.train.GradientDescentOptimizer(self.learning_rate)
             opt = tf.train.GradientDescentOptimizer(self.learning_rate)
             for b in xrange(len(self.buckets)):
                 gradients = tf.gradients(self.losses[b], params)
