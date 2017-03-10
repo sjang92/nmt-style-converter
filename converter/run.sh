@@ -5,7 +5,7 @@ python -m translate \
        --to_train_data ./data/all_original_train.ids\
        --from_dev_data ./data/all_modern_dev.ids\
        --to_dev_data ./data/all_original_dev.ids\
-       --num_layers 2 \
+       --num_layers 3 \
        --size 256 \
        --steps_per_checkpoint 5 \
        --learning_rate 0.1 \

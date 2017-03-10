@@ -212,8 +212,6 @@ def attention_decoder(decoder_inputs,
         raise ValueError("Could not infer input size from input: %s" % inp.name)
       x = linear([inp] + attns, input_size, True)
       # Run the RNN.
-      import pdb
-      pdb.set_trace()
       cell_output, state = cell(x, state)
       # Run the attention mechanism.
       if i == 0 and initial_state_attention:
@@ -300,8 +298,6 @@ def embedding_attention_decoder(decoder_inputs,
 
     embedding = variable_scope.get_variable("embedding",
                                             [num_symbols, embedding_size])
-    import pdb
-    pdb.set_trace()
     loop_function = _extract_argmax_and_embed(
         embedding, output_projection,
         update_embedding_for_previous) if feed_previous else None
@@ -419,20 +415,24 @@ def embedding_attention_seq2seq(encoder_inputs,
 
     encoder_state = []
     for i in range(0, len(fw_state)):
+      fw_c, fw_m = fw_state[i]
+      bw_c, bw_m = bw_state[i]
+      concat_c = tf.concat([fw_c, bw_c], axis=1)
+      concat_m = tf.concat([fw_m, bw_m], axis=1)
+
+      concat_state = tf.contrib.rnn.LSTMStateTuple(concat_c, concat_m)
       # each state at each layer is shape (batch_size, embedding_size), so concat at axis=1
-      concat_state = tf.concat([fw_state[i], bw_state[i]], axis=1)
       encoder_state.append(concat_state)
 
     encoder_state = tuple(encoder_state)
-
+    #import pdb
+    #pdb.set_trace()
     assert len(encoder_state) == len(fw_state), "length should be the same after concat"""
     #############################################################
 
     #encoder_outputs = layer3_outputs # length of this should equal the bucket[0]
     #encoder_state = layer3_state # This should be a single tensor
 
-    #import pdb
-    #pdb.set_trace()
     # First calculate a concatenation of encoder outputs to put attention on.
     # IMPORTANT : since we're using bidirectional, 2*embeddingsize
     top_states = [
@@ -447,12 +447,11 @@ def embedding_attention_seq2seq(encoder_inputs,
     output_size = None
     if output_projection is None:
         # TODO : let decoding language be 2d
-      cell = tf.contrib.rnn.LSTMCell(embedding_size * 2, num_proj=embedding_size*2)
-      cell = tf.contrib.rnn.MultiRNNCell([cell] * len(encoder_state))
       cell = core_rnn_cell.OutputProjectionWrapper(cell, num_decoder_symbols)
       output_size = num_decoder_symbols
+    cell = tf.contrib.rnn.LSTMCell(embedding_size * 2, num_proj=embedding_size*2, state_is_tuple=True)
+    cell = tf.contrib.rnn.MultiRNNCell([cell] * len(encoder_state))
 
-    print(output_projection)
 
     return embedding_attention_decoder(
         decoder_inputs,

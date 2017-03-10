@@ -90,11 +90,12 @@ class NMT_Model(object):
             self.size = size
 				
 				# Create the internal multi-layer cell for our RNN.
-        def single_cell():
+        #def single_cell():
             return tf.contrib.rnn.GRUCell(self.size)
-        if self.use_lstm:
+        if True:
+        #if self.use_lstm:
             def single_cell():
-                return tf.contrib.rnn.BasicLSTMCell(self.size)
+                return tf.contrib.rnn.BasicLSTMCell(self.size, state_is_tuple=True)
         self.cell = single_cell()
         if self.num_layers > 1:
             self.cell = tf.contrib.rnn.MultiRNNCell([single_cell() for _ in range(self.num_layers)])

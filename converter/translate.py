@@ -186,6 +186,10 @@ def train():
         assert False, "Should never come here"
 
     #print from_train
+    from_train = './data/all_modern_train.ids'
+    to_train = './data/all_original_train.ids'
+    from_dev = './data/all_modern_dev.ids'
+    to_dev =  './data/all_original_dev.ids'
 
     with tf.Session() as sess:
         # Create model.
