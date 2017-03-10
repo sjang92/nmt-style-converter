@@ -24,6 +24,36 @@ import tensorflow as tf
 # TODO(ebrevdo): Remove once _linear is fully deprecated.
 linear = core_rnn_cell_impl._linear  # pylint: disable=protected-access
 
+def _extract_argmax_and_embed(embedding,
+                              output_projection=None,
+                              update_embedding=True):
+  """Get a loop_function that extracts the previous symbol and embeds it.
+
+  Args:
+    embedding: embedding tensor for symbols.
+    output_projection: None or a pair (W, B). If provided, each fed previous
+      output will first be multiplied by W and added B.
+    update_embedding: Boolean; if False, the gradients will not propagate
+      through the embeddings.
+
+  Returns:
+    A loop function.
+  """
+
+  def loop_function(prev, _):
+    if output_projection is not None:
+      prev = nn_ops.xw_plus_b(prev, output_projection[0], output_projection[1])
+    prev_symbol = math_ops.argmax(prev, 1)
+    # Note that gradients will not propagate through the second parameter of
+    # embedding_lookup.
+    emb_prev = embedding_ops.embedding_lookup(embedding, prev_symbol)
+    if not update_embedding:
+      emb_prev = array_ops.stop_gradient(emb_prev)
+    return emb_prev
+
+  return loop_function
+
+
 def attention_decoder(decoder_inputs,
                       initial_state,
                       attention_states,
@@ -82,6 +112,23 @@ def attention_decoder(decoder_inputs,
       of attention_states are not set, or input size cannot be inferred
       from the input.
   """
+  
+  ##########################
+  # modify the cell type
+  # cell.output_size = d right now. make our decoder cell to output 2d.
+  """
+  embed_size = cell.output_size
+  num_layers = len(initial_state) # initial state is a tuple of size num_layers
+  print(embed_size)
+  # Each LSTM cell should get prev_state of 2d and input of d
+  layer1_cell = tf.contrib.rnn.LSTMCell(embed_size, num_proj=2 * embed_size)
+  #layern_cell = tf.contrib.rnn.LSTMCell(2*embed_size)
+  cell = tf.contrib.rnn.MultiRNNCell([cell for _ in range(num_layers)])
+  cell = core_rnn_cell.EmbeddingWrapper(cell, embedding_classes = num_encoder_symbols, embedding_size = embedding_size)
+"""
+  ########################
+
+
   if not decoder_inputs:
     raise ValueError("Must provide at least 1 input to attention decoder.")
   if num_heads < 1:
@@ -165,6 +212,8 @@ def attention_decoder(decoder_inputs,
         raise ValueError("Could not infer input size from input: %s" % inp.name)
       x = linear([inp] + attns, input_size, True)
       # Run the RNN.
+      import pdb
+      pdb.set_trace()
       cell_output, state = cell(x, state)
       # Run the attention mechanism.
       if i == 0 and initial_state_attention:
@@ -251,6 +300,8 @@ def embedding_attention_decoder(decoder_inputs,
 
     embedding = variable_scope.get_variable("embedding",
                                             [num_symbols, embedding_size])
+    import pdb
+    pdb.set_trace()
     loop_function = _extract_argmax_and_embed(
         embedding, output_projection,
         update_embedding_for_previous) if feed_previous else None
@@ -329,8 +380,7 @@ def embedding_attention_seq2seq(encoder_inputs,
       assert embedding_size == encoder_embeddings.shape[1], "embedding size is wrong..."
 
     # Wrap EMBEDDING AS A TENSOR
-
-
+    """
     # DEFINE LAYER1 CELLS FOR BIDIRECTIONAL LSTM
     lstm_layer_1 = tf.contrib.rnn.BasicLSTMCell(embedding_size) # forget bias = 1.0 by default
     lstm_layer_2 = tf.contrib.rnn.LSTMCell(2 * embedding_size, num_proj=embedding_size) # starting layer2, we get double the size
@@ -356,16 +406,37 @@ def embedding_attention_seq2seq(encoder_inputs,
     # Run Layer 3 : 
     layer3_outputs, layer3_state = core_rnn.static_rnn(lstm_layer_3, layer2_outputs, dtype=dtype)
 
+    # TEST
+    #test_cell = tf.contrib.rnn.LSTMCell(2 * embedding_size, num_proj = )
+    """
+    #############################################################
+    if encoder_embeddings:
+      print("should not come here. we're not feeding encoder_embeddings")
+    else:
+      encoder_cell = core_rnn_cell.EmbeddingWrapper(cell, embedding_classes = num_encoder_symbols, embedding_size = embedding_size)
 
-    encoder_outputs = layer3_outputs # length of this should equal the bucket[0]
-    encoder_state = layer3_state # This should be a single tensor
+    encoder_outputs, fw_state, bw_state = core_rnn.static_bidirectional_rnn(encoder_cell, encoder_cell, encoder_inputs, dtype=dtype)
 
-    print(lstm_layer_3.output_size)
-    import pdb
+    encoder_state = []
+    for i in range(0, len(fw_state)):
+      # each state at each layer is shape (batch_size, embedding_size), so concat at axis=1
+      concat_state = tf.concat([fw_state[i], bw_state[i]], axis=1)
+      encoder_state.append(concat_state)
+
+    encoder_state = tuple(encoder_state)
+
+    assert len(encoder_state) == len(fw_state), "length should be the same after concat"""
+    #############################################################
+
+    #encoder_outputs = layer3_outputs # length of this should equal the bucket[0]
+    #encoder_state = layer3_state # This should be a single tensor
+
+    #import pdb
     #pdb.set_trace()
     # First calculate a concatenation of encoder outputs to put attention on.
+    # IMPORTANT : since we're using bidirectional, 2*embeddingsize
     top_states = [
-        array_ops.reshape(e, [-1, 1, lstm_layer_3.output_size]) for e in encoder_outputs
+        array_ops.reshape(e, [-1, 1, 2*embedding_size]) for e in encoder_outputs
     ]
     attention_states = array_ops.concat(top_states, 1)
 
@@ -375,8 +446,13 @@ def embedding_attention_seq2seq(encoder_inputs,
     # Decoder.
     output_size = None
     if output_projection is None:
+        # TODO : let decoding language be 2d
+      cell = tf.contrib.rnn.LSTMCell(embedding_size * 2, num_proj=embedding_size*2)
+      cell = tf.contrib.rnn.MultiRNNCell([cell] * len(encoder_state))
       cell = core_rnn_cell.OutputProjectionWrapper(cell, num_decoder_symbols)
       output_size = num_decoder_symbols
+
+    print(output_projection)
 
     return embedding_attention_decoder(
         decoder_inputs,
@@ -384,7 +460,7 @@ def embedding_attention_seq2seq(encoder_inputs,
          attention_states,
          cell,
          num_decoder_symbols,
-         embedding_size,
+         embedding_size*2,
          num_heads=num_heads,
          output_size=output_size,
          output_projection=output_projection,

@@ -185,6 +185,8 @@ def train():
     else:
         assert False, "Should never come here"
 
+    #print from_train
+
     with tf.Session() as sess:
         # Create model.
         print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.size))

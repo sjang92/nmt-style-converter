@@ -123,7 +123,8 @@ class NMT_Model(object):
         #if loss_type == 'sampled':
         if self.num_samples > 0 and self.num_samples < self.target_vocab_size:
             #assert self.num_samples < self.target_vocab_size, '# samples should be less than |V|'
-            w_t = tf.get_variable("proj_w", [self.target_vocab_size, self.size], dtype=self.dtype)
+            # TODO : self.size *= 2
+            w_t = tf.get_variable("proj_w", [self.target_vocab_size, self.size*2], dtype=self.dtype)
             w = tf.transpose(w_t)
             b = tf.get_variable("proj_b", [self.target_vocab_size], dtype=self.dtype)
             self.output_projection = (w, b)
@@ -175,8 +176,8 @@ class NMT_Model(object):
                 return seq2seq.embedding_attention_seq2seq(encoder_inputs,
                 #return tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(encoder_inputs,
                     decoder_inputs, 
-                    #self.cell, 
-                    None,
+                    self.cell, 
+                    #None,
                     num_encoder_symbols=self.source_vocab_size, 
                     num_decoder_symbols=self.target_vocab_size, 
                     embedding_size=self.size, 
