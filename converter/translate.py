@@ -279,8 +279,6 @@ def decode():
         en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
         _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
 
-        import pdb
-        pdb.set_trace()
 
         # Decode from standard input.
         sys.stdout.write("> ")

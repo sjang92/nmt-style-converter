@@ -51,6 +51,9 @@ def _extract_argmax_and_embed(embedding,
       emb_prev = array_ops.stop_gradient(emb_prev)
     return emb_prev
 
+  def beam_search(prev, _):
+    print("beam_serach")
+
   return loop_function
 
 
@@ -59,7 +62,7 @@ def attention_decoder(decoder_inputs,
                       attention_states,
                       cell,
                       output_size=None,
-                      num_heads=1,
+                      num_heads=2,
                       loop_function=None,
                       dtype=None,
                       scope=None,
@@ -425,8 +428,6 @@ def embedding_attention_seq2seq(encoder_inputs,
       encoder_state.append(concat_state)
 
     encoder_state = tuple(encoder_state)
-    #import pdb
-    #pdb.set_trace()
     assert len(encoder_state) == len(fw_state), "length should be the same after concat"""
     #############################################################
 

@@ -289,6 +289,8 @@ class NMT_Model(object):
             output_feed = [self.updates[bucket_id],  # Update Op that does SGD.
                             self.gradient_norms[bucket_id],  # Gradient norm.
                             self.losses[bucket_id]]  # Loss for this batch.
+
+        # TODO : THIS IS WHERE WE DO BEAM SEARCH
         else:
             output_feed = [self.losses[bucket_id]]  # Loss for this batch.
             for l in xrange(decoder_size):  # Output logits.
