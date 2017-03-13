@@ -11,4 +11,6 @@ python -m translate \
        --learning_rate 0.1 \
        --learning_rate_decay_factor 0.9 \
        --from_vocab_size 10000\
-       --to_vocab_size 10000
+       --to_vocab_size 10000\
+       --decode 1\
+       --beam_search 1

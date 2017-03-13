@@ -59,6 +59,7 @@ tf.app.flags.DEFINE_float("max_gradient_norm", 5.0,
 tf.app.flags.DEFINE_integer("batch_size", 64,
                                                         "Batch size to use during training.")
 tf.app.flags.DEFINE_integer("size", 1024, "Size of each model layer.")
+
 tf.app.flags.DEFINE_integer("num_layers", 3, "Number of layers in the model.")
 tf.app.flags.DEFINE_integer("from_vocab_size", 40000, "English vocabulary size.")
 tf.app.flags.DEFINE_integer("to_vocab_size", 40000, "French vocabulary size.")
@@ -68,16 +69,15 @@ tf.app.flags.DEFINE_string("from_train_data", None, "Training data.")
 tf.app.flags.DEFINE_string("to_train_data", None, "Training data.")
 tf.app.flags.DEFINE_string("from_dev_data", None, "Training data.")
 tf.app.flags.DEFINE_string("to_dev_data", None, "Training data.")
-tf.app.flags.DEFINE_integer("max_train_data_size", 0,
-                                                        "Limit on the size of training data (0: no limit).")
-tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200,
-                                                        "How many training steps to do per checkpoint.")
-tf.app.flags.DEFINE_boolean("decode", False,
-                                                        "Set to True for interactive decoding.")
-tf.app.flags.DEFINE_boolean("self_test", False,
-                                                        "Run a self-test if this is set to True.")
-tf.app.flags.DEFINE_boolean("use_fp16", False,
-                                                        "Train using fp16 instead of fp32.")
+
+tf.app.flags.DEFINE_integer("max_train_data_size", 0, "Limit on the size of training data (0: no limit).")
+tf.app.flags.DEFINE_integer("steps_per_checkpoint", 200, "How many training steps to do per checkpoint.")
+tf.app.flags.DEFINE_boolean("decode", False, "Set to True for interactive decoding.")
+tf.app.flags.DEFINE_boolean("beam_search", False, "Set to use beam_search for interactive decoding.")
+tf.app.flags.DEFINE_integer("beam_size", 3, "Number of layers in the model.")
+
+tf.app.flags.DEFINE_boolean("self_test", False, "Run a self-test if this is set to True.")
+tf.app.flags.DEFINE_boolean("use_fp16", False,"Train using fp16 instead of fp32.")
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -128,7 +128,7 @@ def create_model(session, forward_only):
     """Create translation model and initialize or load parameters in session."""
     dtype = tf.float16 if FLAGS.use_fp16 else tf.float32
     import nmt_model
-    #model = seq2seq_model.Seq2SeqModel(
+
     model = nmt_model.NMT_Model(
             FLAGS.from_vocab_size,
             FLAGS.to_vocab_size,
@@ -140,7 +140,9 @@ def create_model(session, forward_only):
             FLAGS.learning_rate,
             FLAGS.learning_rate_decay_factor,
             forward_only=forward_only,
-            dtype=dtype)
+            dtype=dtype,
+            beam_search=FLAGS.beam_search,
+            beam_size=FLAGS.beam_size)
 
     model.define_loss_func()
     model.define_nmt_cell(FLAGS.size)
@@ -322,9 +324,7 @@ def self_test():
         print("Self-test for neural translation model.")
         # Create model with vocabularies of 10, 2 small buckets, 2 layers of 32.
         import nmt_model
-        model = nmt_model.NMT_Model(10, 10, [(3, 3), (6, 6)], 32, 2,
-        #model = seq2seq_model.Seq2SeqModel(10, 10, [(3, 3), (6, 6)], 32, 2,
-                                                                             5.0, 32, 0.3, 0.99, num_samples=8)
+        model = nmt_model.NMT_Model(10, 10, [(3, 3), (6, 6)], 32, 2, 5.0, 32, 0.3, 0.99, num_samples=8)
         model.define_loss_func()
         model.define_nmt_cell(None)
 

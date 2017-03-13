@@ -21,7 +21,9 @@ class NMT_Model(object):
                              use_lstm=False,
                              num_samples=512,
                              forward_only=False,
-                             dtype=tf.float32):
+                             dtype=tf.float32,
+                             beam_search=False,
+                             beam_size=0):
 
         """
         Initialize the NMT Model
@@ -40,6 +42,9 @@ class NMT_Model(object):
         self.num_samples = num_samples
         self.use_lstm = use_lstm
         self.dtype = dtype
+        self.beam_search = beam_search
+
+        self.beam_size = beam_size
 
         self.learning_rate = tf.Variable(float(learning_rate), trainable=False, dtype=dtype)
         self.learning_rate_decay_op = self.learning_rate.assign(self.learning_rate * learning_rate_decay_factor)
@@ -184,8 +189,10 @@ class NMT_Model(object):
                     embedding_size=self.size, 
                     output_projection=self.output_projection, 
                     feed_previous=do_decode, 
-                    dtype=self.dtype)
-                    #encoder_embeddings=None)
+                    dtype=self.dtype,
+                    beam_search=self.beam_search,
+                    target_vocab_size=self.target_vocab_size, beam_size=self.beam_size)
+                    #encoder_embeddings=None,)
             self.seq2seq_f = seq2seq_f
         else:
             pass
