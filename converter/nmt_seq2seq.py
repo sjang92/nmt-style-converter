@@ -26,7 +26,10 @@ linear = core_rnn_cell_impl._linear  # pylint: disable=protected-access
 
 def _extract_argmax_and_embed(embedding,
                               output_projection=None,
-                              update_embedding=True):
+                              update_embedding=True,
+                              beam_search=False,
+                              target_vocab_size=0,
+                              beam_size=0):
   """Get a loop_function that extracts the previous symbol and embeds it.
 
   Args:
@@ -39,8 +42,7 @@ def _extract_argmax_and_embed(embedding,
   Returns:
     A loop function.
   """
-
-  def loop_function(prev, _):
+  def loop_function(prev, i):
     if output_projection is not None:
       prev = nn_ops.xw_plus_b(prev, output_projection[0], output_projection[1])
     prev_symbol = math_ops.argmax(prev, 1)
@@ -51,8 +53,43 @@ def _extract_argmax_and_embed(embedding,
       emb_prev = array_ops.stop_gradient(emb_prev)
     return emb_prev
 
-  def beam_search(prev, _):
-    print("beam_serach")
+  g_log_beam_probs, g_beam_symbols, g_beam_path = [[]], [[]], [[]]
+
+  def beam_search_function(prev, i):
+      log_beam_probs = g_log_beam_probs[0]
+      beam_path = g_beam_path[0]
+      beam_symbols = g_beam_symbols[0]
+
+      if output_projection is not None:
+        prev = tf.nn.xw_plus_b(
+        prev, output_projection[0], output_projection[1])
+
+      probs = tf.log(tf.nn.softmax(prev))
+
+      if i > 1:
+          probs = tf.reshape(probs + log_beam_probs[-1],
+                             [-1, beam_size * target_vocab_size])
+
+      best_probs, indices = tf.nn.top_k(probs, beam_size)
+      indices = tf.reshape(indices, [-1, 1])
+      best_probs = tf.reshape(best_probs, [-1, 1])
+
+      symbols = indices % target_vocab_size  # Which word in vocabulary.
+      beam_parent = indices // target_vocab_size  # Which hypothesis it came from.
+
+      beam_symbols.append(symbols)
+      beam_path.append(beam_parent)
+      log_beam_probs.append(best_probs)
+
+      symbols = symbols[:,0]
+
+      output = embedding_ops.embedding_lookup(embedding, symbols)
+      if not update_embedding:
+          output = array_ops.stop_gradient(output)
+      return output
+
+  if beam_search:
+      return beam_search_function
 
   return loop_function
 
@@ -205,10 +242,12 @@ def attention_decoder(decoder_inputs,
     for i, inp in enumerate(decoder_inputs):
       if i > 0:
         variable_scope.get_variable_scope().reuse_variables()
+
       # If loop_function is set, we use it instead of decoder_inputs.
       if loop_function is not None and prev is not None:
         with variable_scope.variable_scope("loop_function", reuse=True):
           inp = loop_function(prev, i)
+
       # Merge input and previous attentions into one vector of the right size.
       input_size = inp.get_shape().with_rank(2)[1]
       if input_size.value is None:
@@ -245,7 +284,10 @@ def embedding_attention_decoder(decoder_inputs,
                                 update_embedding_for_previous=True,
                                 dtype=None,
                                 scope=None,
-                                initial_state_attention=False):
+                                initial_state_attention=False,
+                                beam_search=False,
+                                target_vocab_size=0,
+                                beam_size=0):
   """RNN decoder with embedding and attention and a pure-decoding option.
 
   Args:
@@ -303,7 +345,7 @@ def embedding_attention_decoder(decoder_inputs,
                                             [num_symbols, embedding_size])
     loop_function = _extract_argmax_and_embed(
         embedding, output_projection,
-        update_embedding_for_previous) if feed_previous else None
+        update_embedding_for_previous, beam_search, target_vocab_size, beam_size) if feed_previous else None
     emb_inp = [
         embedding_ops.embedding_lookup(embedding, i) for i in decoder_inputs
     ]
@@ -330,7 +372,10 @@ def embedding_attention_seq2seq(encoder_inputs,
                                 scope=None,
                                 initial_state_attention=False,
                                 encoder_embeddings=None,
-                                decoder_embeddings=None):  # CHANGES - adding embeddings for input/output
+                                decoder_embeddings=None,
+                                beam_search=False,
+                                target_vocab_size=0,
+                                beam_size=0):  # CHANGES - adding embeddings for input/output
   """
   Args:
     encoder_inputs: A list of 1D int32 Tensors of shape [batch_size].
@@ -465,10 +510,10 @@ def embedding_attention_seq2seq(encoder_inputs,
          output_size=output_size,
          output_projection=output_projection,
          feed_previous=feed_previous,
-         initial_state_attention=initial_state_attention)
-
-    return None
-
+         initial_state_attention=initial_state_attention,
+         beam_search=beam_search,
+         target_vocab_size=target_vocab_size,
+         beam_size=beam_size)
 
 def sequence_loss_by_example(logits,
                              targets,
