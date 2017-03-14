@@ -14,3 +14,4 @@ python -m translate \
        --to_vocab_size 10000\
        --decode 1\
        --beam_search 1
+

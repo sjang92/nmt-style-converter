@@ -23,7 +23,8 @@ import tensorflow as tf
 
 # TODO(ebrevdo): Remove once _linear is fully deprecated.
 linear = core_rnn_cell_impl._linear  # pylint: disable=protected-access
-g_log_beam_probs, g_beam_symbols, g_beam_path = [[]], [[]], [[]]
+
+g_log_beam_probs, g_beam_symbols, g_beam_path = [], [], []
 
 def _extract_argmax_and_embed(embedding,
                               output_projection=None,
@@ -55,12 +56,16 @@ def _extract_argmax_and_embed(embedding,
     return emb_prev
 
   def beam_search_function(prev, i):
-      if i == 0:
-          g_log_beam_probs, g_beam_symbols, g_beam_path = [[]], [[]], [[]]
+      global g_log_beam_probs
+      global g_beam_symbols
+      global g_beam_path
 
-      log_beam_probs = g_log_beam_probs[0]
-      beam_path = g_beam_path[0]
-      beam_symbols = g_beam_symbols[0]
+      if i == 1:
+          g_log_beam_probs, g_beam_symbols, g_beam_path = [], [], []
+
+      log_beam_probs = g_log_beam_probs
+      beam_path = g_beam_path
+      beam_symbols = g_beam_symbols
 
       if output_projection is not None:
         prev = tf.nn.xw_plus_b(
@@ -252,7 +257,7 @@ def attention_decoder(decoder_inputs,
       if loop_function is not None and prev is not None:
         with variable_scope.variable_scope("loop_function", reuse=True):
           inp = loop_function(prev, i)
-          if i == 1:
+          if i == 1 and beam_search:
             attns = [tf.concat([attns[j]] * beam_size, axis=0) for j in xrange(num_heads)]
             new_state = []
             for j in xrange(len(state)):
@@ -263,7 +268,7 @@ def attention_decoder(decoder_inputs,
               new_state.append(concat)
             state = new_state
 
-      inp = tf.Print(inp, [tf.shape(inp), i, tf.shape(attns[0]), tf.shape(state[0])], "input_dimesnion: ")
+      #inp = tf.Print(inp, [tf.shape(inp), i, tf.shape(attns[0]), tf.shape(state[0])], "input_dimesnion: ")
 
       # Merge input and previous attentions into one vector of the right size.
       input_size = inp.get_shape().with_rank(2)[1]
@@ -275,7 +280,7 @@ def attention_decoder(decoder_inputs,
       cell_output, state = cell(x, state)
       # Run the attention mechanism.
 
-      if i == 1:
+      if i == 1 and beam_search:
           attns = [array_ops.zeros(batch_attn_size * beam_size, dtype=dtype) for _ in xrange(num_heads)]
 
       if i == 0 and initial_state_attention:
@@ -290,6 +295,33 @@ def attention_decoder(decoder_inputs,
       if loop_function is not None:
         prev = output
       outputs.append(output)  # 3 x |output_size|
+
+  if beam_search:
+    beam_outputs = []
+    # first choose the beam path with highest score
+
+    col = g_log_beam_probs[-1] # last column
+    max_row = tf.reshape(tf.to_int32(tf.argmax(col, axis=0)), shape=())
+
+    print(max_row)
+
+
+    # Handle last output first
+    beam_outputs.append(tf.gather(outputs[-1], [max_row]))
+
+    for i, path_tensor in enumerate(g_beam_path[::-1]):
+        # first set max_row'th elem of the 
+
+        val = tf.reshape(path_tensor[max_row], shape=()) # extract scalar
+
+        output_idx = len(outputs) - i - 2
+        true_output = tf.gather(outputs[output_idx], [val])
+        beam_outputs.append(true_output)
+
+        max_row = val
+
+    outputs = beam_outputs[::-1]
+    print(len(outputs))
 
   return outputs, state
 
