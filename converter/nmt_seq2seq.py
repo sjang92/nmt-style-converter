@@ -277,6 +277,7 @@ def attention_decoder(decoder_inputs,
 
       x = linear([inp] + attns, input_size, True)
       # Run the RNN.
+
       cell_output, state = cell(x, state)
       # Run the attention mechanism.
 
@@ -517,6 +518,7 @@ def embedding_attention_seq2seq(encoder_inputs,
 
     encoder_outputs, fw_state, bw_state = core_rnn.static_bidirectional_rnn(encoder_cell, encoder_cell, encoder_inputs, dtype=dtype)
 
+
     encoder_state = []
     for i in range(0, len(fw_state)):
       fw_c, fw_m = fw_state[i]
@@ -529,6 +531,8 @@ def embedding_attention_seq2seq(encoder_inputs,
       encoder_state.append(concat_state)
 
     encoder_state = tuple(encoder_state)
+
+    encoder_state = fw_state
     assert len(encoder_state) == len(fw_state), "length should be the same after concat"""
     #############################################################
 
@@ -538,7 +542,7 @@ def embedding_attention_seq2seq(encoder_inputs,
     # First calculate a concatenation of encoder outputs to put attention on.
     # IMPORTANT : since we're using bidirectional, 2*embeddingsize
     top_states = [
-        array_ops.reshape(e, [-1, 1, 2*embedding_size]) for e in encoder_outputs
+        array_ops.reshape(e, [-1, 1, 2*encoder_cell.output_size]) for e in encoder_outputs
     ]
     attention_states = array_ops.concat(top_states, 1)
 
@@ -551,7 +555,7 @@ def embedding_attention_seq2seq(encoder_inputs,
         # TODO : let decoding language be 2d
       cell = core_rnn_cell.OutputProjectionWrapper(cell, num_decoder_symbols)
       output_size = num_decoder_symbols
-    cell = tf.contrib.rnn.LSTMCell(embedding_size * 2, num_proj=embedding_size*2, state_is_tuple=True)
+    cell = tf.contrib.rnn.LSTMCell(embedding_size, num_proj=encoder_cell.output_size, state_is_tuple=True)
     cell = tf.contrib.rnn.MultiRNNCell([cell] * len(encoder_state))
 
 
@@ -561,7 +565,7 @@ def embedding_attention_seq2seq(encoder_inputs,
          attention_states,
          cell,
          num_decoder_symbols,
-         embedding_size*2,
+         embedding_size,
          num_heads=num_heads,
          output_size=output_size,
          output_projection=output_projection,

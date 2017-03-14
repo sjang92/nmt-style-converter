@@ -100,7 +100,8 @@ class NMT_Model(object):
         if True:
         #if self.use_lstm:
             def single_cell():
-                return tf.contrib.rnn.BasicLSTMCell(self.size, state_is_tuple=True)
+                #return tf.contrib.rnn.BasicLSTMCell(self.size, state_is_tuple=True)
+                return tf.contrib.rnn.LSTMCell(300, num_proj=self.size)
         self.cell = single_cell()
         if self.num_layers > 1:
             self.cell = tf.contrib.rnn.MultiRNNCell([single_cell() for _ in range(self.num_layers)])
@@ -130,12 +131,11 @@ class NMT_Model(object):
         if self.num_samples > 0 and self.num_samples < self.target_vocab_size:
             #assert self.num_samples < self.target_vocab_size, '# samples should be less than |V|'
             # TODO : self.size *= 2
-            w_t = tf.get_variable("proj_w", [self.target_vocab_size, self.size*2], dtype=self.dtype)
+            w_t = tf.get_variable("proj_w", [self.target_vocab_size, self.size], dtype=self.dtype)
             w = tf.transpose(w_t)
             b = tf.get_variable("proj_b", [self.target_vocab_size], dtype=self.dtype)
             self.output_projection = (w, b)
 
-            # TODO : figure out if we need to use CPU
             def sampled_loss(labels, inputs):
                 with tf.device("/cpu:0"):
                     local_w_t = tf.cast(w_t, tf.float32)
@@ -186,7 +186,7 @@ class NMT_Model(object):
                     #None,
                     num_encoder_symbols=self.source_vocab_size, 
                     num_decoder_symbols=self.target_vocab_size, 
-                    embedding_size=self.size, 
+                    embedding_size=300, # use google's  
                     output_projection=self.output_projection, 
                     feed_previous=do_decode, 
                     dtype=self.dtype,
