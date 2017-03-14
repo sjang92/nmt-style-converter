@@ -23,6 +23,7 @@ import tensorflow as tf
 
 # TODO(ebrevdo): Remove once _linear is fully deprecated.
 linear = core_rnn_cell_impl._linear  # pylint: disable=protected-access
+g_log_beam_probs, g_beam_symbols, g_beam_path = [[]], [[]], [[]]
 
 def _extract_argmax_and_embed(embedding,
                               output_projection=None,
@@ -53,9 +54,10 @@ def _extract_argmax_and_embed(embedding,
       emb_prev = array_ops.stop_gradient(emb_prev)
     return emb_prev
 
-  g_log_beam_probs, g_beam_symbols, g_beam_path = [[]], [[]], [[]]
-
   def beam_search_function(prev, i):
+      if i == 0:
+          g_log_beam_probs, g_beam_symbols, g_beam_path = [[]], [[]], [[]]
+
       log_beam_probs = g_log_beam_probs[0]
       beam_path = g_beam_path[0]
       beam_symbols = g_beam_symbols[0]
@@ -103,7 +105,9 @@ def attention_decoder(decoder_inputs,
                       loop_function=None,
                       dtype=None,
                       scope=None,
-                      initial_state_attention=False):
+                      initial_state_attention=False,
+                      beam_search=False,
+                      beam_size=0):
   """RNN decoder with attention for the sequence-to-sequence model.
   In this context "attention" means that, during decoding, the RNN can look up
   information in the additional tensor attention_states, and it does this by
@@ -234,7 +238,8 @@ def attention_decoder(decoder_inputs,
     attns = [
         array_ops.zeros(
             batch_attn_size, dtype=dtype) for _ in xrange(num_heads)
-    ]
+        ]
+
     for a in attns:  # Ensure the second shape of attention vectors is set.
       a.set_shape([None, attn_size])
     if initial_state_attention:
@@ -247,15 +252,32 @@ def attention_decoder(decoder_inputs,
       if loop_function is not None and prev is not None:
         with variable_scope.variable_scope("loop_function", reuse=True):
           inp = loop_function(prev, i)
+          if i == 1:
+            attns = [tf.concat([attns[j]] * beam_size, axis=0) for j in xrange(num_heads)]
+            new_state = []
+            for j in xrange(len(state)):
+              c, m = state[j]
+              c = tf.concat([c] * beam_size, axis=0)
+              m = tf.concat([m] * beam_size, axis=0)
+              concat = tf.contrib.rnn.LSTMStateTuple(c, m)
+              new_state.append(concat)
+            state = new_state
+
+      inp = tf.Print(inp, [tf.shape(inp), i, tf.shape(attns[0]), tf.shape(state[0])], "input_dimesnion: ")
 
       # Merge input and previous attentions into one vector of the right size.
       input_size = inp.get_shape().with_rank(2)[1]
       if input_size.value is None:
         raise ValueError("Could not infer input size from input: %s" % inp.name)
+
       x = linear([inp] + attns, input_size, True)
       # Run the RNN.
       cell_output, state = cell(x, state)
       # Run the attention mechanism.
+
+      if i == 1:
+          attns = [array_ops.zeros(batch_attn_size * beam_size, dtype=dtype) for _ in xrange(num_heads)]
+
       if i == 0 and initial_state_attention:
         with variable_scope.variable_scope(
             variable_scope.get_variable_scope(), reuse=True):
@@ -267,7 +289,7 @@ def attention_decoder(decoder_inputs,
         output = linear([cell_output] + attns, output_size, True)
       if loop_function is not None:
         prev = output
-      outputs.append(output)
+      outputs.append(output)  # 3 x |output_size|
 
   return outputs, state
 
@@ -357,7 +379,9 @@ def embedding_attention_decoder(decoder_inputs,
         output_size=output_size,
         num_heads=num_heads,
         loop_function=loop_function,
-        initial_state_attention=initial_state_attention)
+        initial_state_attention=initial_state_attention,
+        beam_search=beam_search,
+        beam_size=beam_size)
 
 def embedding_attention_seq2seq(encoder_inputs,
                                 decoder_inputs,
