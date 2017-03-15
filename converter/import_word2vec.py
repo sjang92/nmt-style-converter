@@ -11,7 +11,7 @@ vocabs = {}
 
 with open('./data/all_modern.vocab', 'r') as vocab_file:
     for char in vocab_file:
-        vocabs[filter(str.isalpha, char)] = len(vocabs.keys())
+        vocabs[char.strip('\n')] = len(vocabs.keys()) # ignore new_line
 
     vocab_file.close()
 
@@ -31,6 +31,7 @@ for word in vocabs.keys():
     else :
         unincluded.append(word)
 
+print embedding_matrix.shape
 
 print included_count
 np.save('unincluded.npy', np.array(unincluded))

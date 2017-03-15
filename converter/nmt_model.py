@@ -55,6 +55,8 @@ class NMT_Model(object):
         self.output_projection=None
         self.loss_func = None
 
+        self.src_embedding_mtrx = None
+
     """
     ====================== LIST OF CONFIG METHODS ==============================
     Use the methods below to configure our nmt model. Since we might want to 
@@ -79,10 +81,11 @@ class NMT_Model(object):
         the default one to be used for training. To do so, just pass None
         """
         assert self.source_vocab_size == len(src_eb_mtrx), 'embedding row size must equal src.|V|'# #row == |V|
-        assert self.target_vocab_size == len(dst_eb_mtrx), 'embedding row size msut equal dst.|V|'
+        #assert self.target_vocab_size == len(dst_eb_mtrx), 'embedding row size msut equal dst.|V|'
 
-        self.src_embedding_mtrx = tf.Variable(src_eb_mtrx, trainable=trainable)
-        self.dst_embedding_mtrx = tf.Variable(dst_eb_mtrx, trainable=trainable)
+        self.src_embedding_mtrx = src_eb_mtrx
+        #self.src_embedding_mtrx = tf.Variable(src_eb_mtrx, trainable=trainable, dtype=self.dtype)
+        #self.dst_embedding_mtrx = tf.Variable(dst_eb_mtrx, trainable=trainable)
 
     def define_nmt_cell(self, size):
         """
@@ -191,8 +194,8 @@ class NMT_Model(object):
                     feed_previous=do_decode, 
                     dtype=self.dtype,
                     beam_search=self.beam_search,
-                    target_vocab_size=self.target_vocab_size, beam_size=self.beam_size)
-                    #encoder_embeddings=None,)
+                    target_vocab_size=self.target_vocab_size, beam_size=self.beam_size,
+                    encoder_embeddings=self.src_embedding_mtrx)
             self.seq2seq_f = seq2seq_f
         else:
             pass

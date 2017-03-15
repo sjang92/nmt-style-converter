@@ -144,6 +144,12 @@ def create_model(session, forward_only):
             beam_search=FLAGS.beam_search,
             beam_size=FLAGS.beam_size)
 
+    # try loading embeding matrix
+    embed_mtrx = np.load('w2v.npy')
+
+    if embed_mtrx is not None:
+        model.define_embedding_mtrx(embed_mtrx)
+
     model.define_loss_func()
     model.define_nmt_cell(FLAGS.size)
 

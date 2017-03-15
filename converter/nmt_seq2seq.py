@@ -468,8 +468,8 @@ def embedding_attention_seq2seq(encoder_inputs,
   # CHANGE
 
   # EMBEDDINGS ARE NP MATRICES
-  if encoder_embeddings:
-    assert num_encoder_symbols == encoder_embeddings.shape[0]
+  #if encoder_embeddings:
+  #  assert num_encoder_symbols == encoder_embeddings.get_shape()[0].value
   if decoder_embeddings:
     assert num_decoder_symbols == decoder_embeddings.shape[0]
   
@@ -477,8 +477,8 @@ def embedding_attention_seq2seq(encoder_inputs,
     dtype = scope.dtype
 
     # Make sure all variables are as we want them to be
-    if encoder_embeddings:
-      assert embedding_size == encoder_embeddings.shape[1], "embedding size is wrong..."
+    #if encoder_embeddings:
+    #  assert 300 == encoder_embeddings.get_shape()[1].value, "embedding size is wrong..."
 
     # Wrap EMBEDDING AS A TENSOR
     """
@@ -511,8 +511,9 @@ def embedding_attention_seq2seq(encoder_inputs,
     #test_cell = tf.contrib.rnn.LSTMCell(2 * embedding_size, num_proj = )
     """
     #############################################################
-    if encoder_embeddings:
-      print("should not come here. we're not feeding encoder_embeddings")
+    if encoder_embeddings is not None:
+      print("feeding encoder_embeddings")
+      encoder_cell = core_rnn_cell.EmbeddingWrapper(cell, num_encoder_symbols, embedding_size,initializer = tf.constant_initializer(encoder_embeddings))
     else:
       encoder_cell = core_rnn_cell.EmbeddingWrapper(cell, embedding_classes = num_encoder_symbols, embedding_size = embedding_size)
 
