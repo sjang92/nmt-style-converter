@@ -480,40 +480,23 @@ def embedding_attention_seq2seq(encoder_inputs,
     #if encoder_embeddings:
     #  assert 300 == encoder_embeddings.get_shape()[1].value, "embedding size is wrong..."
 
-    # Wrap EMBEDDING AS A TENSOR
-    """
-    # DEFINE LAYER1 CELLS FOR BIDIRECTIONAL LSTM
-    lstm_layer_1 = tf.contrib.rnn.BasicLSTMCell(embedding_size) # forget bias = 1.0 by default
-    lstm_layer_2 = tf.contrib.rnn.LSTMCell(2 * embedding_size, num_proj=embedding_size) # starting layer2, we get double the size
-    lstm_layer_3 = tf.contrib.rnn.BasicLSTMCell(embedding_size, state_is_tuple=True)
-
-    cell = tf.contrib.rnn.BasicLSTMCell(embedding_size)
-    #cell = tf.contrib.rnn.MultiRNNCell([cell, cell, cell, cell])
-
-    # Look up embedding vectors for each input. 
-    if encoder_embeddings:
-      print("xx")
-    # If embedding matrix is not provided, train that as well. 
-    else: 
-      # Only embed the inputs to the first layer. 
-      lstm_layer_1 = core_rnn_cell.EmbeddingWrapper(lstm_layer_1, embedding_classes=num_encoder_symbols, embedding_size=embedding_size)
-
-    # Run Layer 1 : Bidirectional RNN
-    layer1_outputs, layer1_fw_state, layer1_bw_state = core_rnn.static_bidirectional_rnn(lstm_layer_1, lstm_layer_1, encoder_inputs, dtype=dtype)
-
-    # Run Layer 2 : Uni directional RNN 
-    layer2_outputs, layer2_state = core_rnn.static_rnn(lstm_layer_2, layer1_outputs, dtype=dtype)
-
-    # Run Layer 3 : 
-    layer3_outputs, layer3_state = core_rnn.static_rnn(lstm_layer_3, layer2_outputs, dtype=dtype)
-
-    # TEST
-    #test_cell = tf.contrib.rnn.LSTMCell(2 * embedding_size, num_proj = )
-    """
-    #############################################################
     if encoder_embeddings is not None:
       print("feeding encoder_embeddings")
-      encoder_cell = core_rnn_cell.EmbeddingWrapper(cell, num_encoder_symbols, embedding_size,initializer = tf.constant_initializer(encoder_embeddings))
+      #insert mebedding from our inputs
+      embedding = variable_scope.get_variable("embedding", [num_encoder_symbols, embedding_size], initializer = tf.constant_initializer(encoder_embeddings), dtype=dtype, trainable=False)
+
+      inputs = []
+
+      for inp in encoder_inputs:
+        curr_input = tf.nn.embedding_lookup(embedding, inp)
+        inputs.append(curr_input)
+
+      encoder_inputs = inputs
+
+      print(encoder_inputs)
+      encoder_cell = cell
+
+      #encoder_cell = core_rnn_cell.EmbeddingWrapper(cell, num_encoder_symbols, embedding_size,initializer = tf.constant_initializer(encoder_embeddings))
     else:
       encoder_cell = core_rnn_cell.EmbeddingWrapper(cell, embedding_classes = num_encoder_symbols, embedding_size = embedding_size)
 
