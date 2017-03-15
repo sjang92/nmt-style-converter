@@ -4,3 +4,4 @@
 .DS_Store
 ./converter/data/*
 ./converter/checkpoint/*
+./converter/2checkpoint/*
