@@ -243,7 +243,7 @@ def train():
             if current_step % FLAGS.steps_per_checkpoint == 0:
                 # Print statistics for the previous epoch.
                 perplexity = math.exp(float(loss)) if loss < 300 else float("inf")
-                print ("global step %d learning rate %.4f step-time %.2f perplexity "
+                print ("global step %d learning rate %.8f step-time %.2f perplexity "
                              "%.2f" % (model.global_step.eval(), model.learning_rate.eval(),
                                                  step_time, perplexity))
                 # Decrease learning rate if no improvement was seen over last 3 times.
