@@ -247,7 +247,9 @@ def train():
                              "%.2f" % (model.global_step.eval(), model.learning_rate.eval(),
                                                  step_time, perplexity))
                 # Decrease learning rate if no improvement was seen over last 3 times.
-                if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):
+                #if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):
+                #    sess.run(model.learning_rate_decay_op)
+                if len(previous_losses) > 2:
                     sess.run(model.learning_rate_decay_op)
                 previous_losses.append(loss)
                 # Save checkpoint and zero timer and loss.
