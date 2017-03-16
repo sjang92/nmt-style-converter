@@ -14,7 +14,7 @@ vocabs = []
 indices = []
 counter = 0
 
-with open('./data/all_modern.vocab', 'r') as vocab_file:
+with open('./data/all_original.snt.aligned.tokens', 'r') as vocab_file:
     for char in vocab_file:
         if char in SYMBS:
             char = SYMBS[char]

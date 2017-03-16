@@ -24,17 +24,23 @@ from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+import nltk
+
 # Step 1: Get the data, set the file_name
-#filename = "muchado_modern.snt.aligned"
 directory = "./data/"
-#file_name = "dummy_corpus.from"
-#file_name = "merchant_modern.snt.aligned"
-file_name = "merchant_original.snt.aligned"
-#file_name = "dummy_corpus.to"
+file_name = "all_original.snt.aligned"
 
 filename = directory+file_name
 token_filename = filename+".tokens"
 id_filename=filename+".ids"
+
+def tokenize(sentence):
+    result = []
+    arr = nltk.word_tokenize(sentence)
+    for word in arr:
+        new_arr = word.strip().replace('-', ' ').split()
+        result.extend(new_arr)
+    return result
 
 # Read the data into a list of strings.
 def read_data(filename):
@@ -42,19 +48,21 @@ def read_data(filename):
     data = []
     with open(filename, 'r') as f:
         for line in f:
-            data.extend(line.split())
+            data.extend(tokenize(line))
     return data
 
 words = read_data(filename)
-print('Data size', len(words))
 
 # Step 2: Build the dictionary and replace rare words with UNK token.
-vocabulary_size = 40000
+vocabulary_size = 23000
 
 def build_dataset(words):
+    global vocabulary_size
     count = [['_PAD', -1], ['_GO',-1], ['_EOS',-1], ['_UNK', -1]]
-    count.extend(collections.Counter(words).most_common(vocabulary_size - 1))
+    count.extend(collections.Counter(words).most_common(vocabulary_size - 4))
     dictionary = dict()
+    vocabulary_size = len(count)
+    print len(count)
 
     # token_ids start from 0
     token_ids = ['_PAD', '_GO', '_EOS', '_UNK']
@@ -73,7 +81,6 @@ def build_dataset(words):
         if word in dictionary.keys():
             index = dictionary[word]
         else:
-            print "x"
             index = 0  # dictionary['UNK']
             unk_count += 1
         data.append(index)
@@ -97,8 +104,9 @@ f.close()
 id_file = open(id_filename, 'w')
 with open(filename, 'r') as orig_file:
     for line in orig_file:
-        curr_words = line.split()
-        curr_tokens = [str(dictionary[word]) for word in curr_words]
+        curr_words = tokenize(line)
+        #curr_words = line.split()
+        curr_tokens = [str(dictionary[word]) for word in curr_words if word in dictionary]
         for token in curr_tokens:
             id_file.write(token)
             id_file.write(' ')
@@ -154,7 +162,7 @@ num_skips = 2         # How many times to reuse an input to generate a label.
 valid_size = 16     # Random set of words to evaluate similarity on.
 valid_window = 100  # Only pick dev samples in the head of the distribution.
 valid_examples = np.random.choice(valid_window, valid_size, replace=False)
-num_sampled = 64    # Number of negative examples to sample.
+num_sampled = 1024    # Number of negative examples to sample.
 
 graph = tf.Graph()
 
@@ -205,7 +213,7 @@ with graph.as_default():
 
 # Step 5: Begin training.
 #num_steps = 100001
-num_steps = 100
+num_steps = 50000
 
 with tf.Session(graph=graph) as session:
     # We must initialize all variables before we use them.
@@ -242,6 +250,6 @@ with tf.Session(graph=graph) as session:
                     close_word = reverse_dictionary[nearest[k]]
                     log_str = "%s %s," % (log_str, close_word)
                 print(log_str)
-                """
+        """
     final_embeddings = normalized_embeddings.eval()
-    print final_embeddings
+    np.save('decoder_embed.npy', final_embeddings)
