@@ -145,10 +145,11 @@ def create_model(session, forward_only):
             beam_size=FLAGS.beam_size)
 
     # try loading embeding matrix
-    embed_mtrx = np.load('w2v.npy')
+    encoder_mtrx = np.load('encoder_embeddings.npy')
+    decoder_mtrx = np.load('decoder_embeddings.npy')
 
-    if embed_mtrx is not None:
-        model.define_embedding_mtrx(embed_mtrx)
+    if encoder_mtrx is not None or decoder_mtrx is not None:
+        model.define_embedding_mtrx(encoder_mtrx, decoder_mtrx)
 
     model.define_loss_func()
     model.define_nmt_cell(FLAGS.size)
@@ -170,6 +171,7 @@ def create_model(session, forward_only):
 
 def train():
     """Train a en->fr translation model using WMT data."""
+    """
     from_train = None
     to_train = None
     from_dev = None
@@ -192,12 +194,11 @@ def train():
                 FLAGS.to_vocab_size)
     else:
         assert False, "Should never come here"
-
-    #print from_train
-    from_train = './data/all_modern_train.ids'
-    to_train = './data/all_original_train.ids'
-    from_dev = './data/all_modern_dev.ids'
-    to_dev =  './data/all_original_dev.ids'
+    """
+    from_train = './data/all_modern.snt.aligned.ids'
+    to_train = './data/all_original.snt.aligned.ids'
+    from_dev = from_train
+    to_dev = to_train
 
     with tf.Session() as sess:
         # Create model.

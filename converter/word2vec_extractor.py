@@ -28,7 +28,7 @@ import nltk
 
 # Step 1: Get the data, set the file_name
 directory = "./data/"
-file_name = "all_original.snt.aligned"
+file_name = "all_modern.snt.aligned"
 
 filename = directory+file_name
 token_filename = filename+".tokens"
@@ -198,7 +198,7 @@ with graph.as_default():
                         num_classes=vocabulary_size))
 
     # Construct the SGD optimizer using a learning rate of 1.0.
-    optimizer = tf.train.GradientDescentOptimizer(1.0).minimize(loss)
+    optimizer = tf.train.GradientDescentOptimizer(0.05).minimize(loss)
 
     # Compute the cosine similarity between minibatch examples and all embeddings.
     norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
@@ -213,7 +213,7 @@ with graph.as_default():
 
 # Step 5: Begin training.
 #num_steps = 100001
-num_steps = 50000
+num_steps = 80001
 
 with tf.Session(graph=graph) as session:
     # We must initialize all variables before we use them.

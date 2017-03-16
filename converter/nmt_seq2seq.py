@@ -342,7 +342,8 @@ def embedding_attention_decoder(decoder_inputs,
                                 initial_state_attention=False,
                                 beam_search=False,
                                 target_vocab_size=0,
-                                beam_size=0):
+                                beam_size=0, 
+                                embedding=None):
   """RNN decoder with embedding and attention and a pure-decoding option.
 
   Args:
@@ -396,8 +397,11 @@ def embedding_attention_decoder(decoder_inputs,
   with variable_scope.variable_scope(
       scope or "embedding_attention_decoder", dtype=dtype) as scope:
 
-    embedding = variable_scope.get_variable("embedding",
+    if embedding is None:
+        embedding = variable_scope.get_variable("embedding",
                                             [num_symbols, embedding_size])
+    else:
+        embedding = variable_scope.get_variable("embedding", shape=[num_symbols, 300], initializer=tf.constant_initializer(embedding), dtype=dtype, trainable=False)
     loop_function = _extract_argmax_and_embed(
         embedding, output_projection,
         update_embedding_for_previous, beam_search, target_vocab_size, beam_size) if feed_previous else None
@@ -470,8 +474,8 @@ def embedding_attention_seq2seq(encoder_inputs,
   # EMBEDDINGS ARE NP MATRICES
   #if encoder_embeddings:
   #  assert num_encoder_symbols == encoder_embeddings.get_shape()[0].value
-  if decoder_embeddings:
-    assert num_decoder_symbols == decoder_embeddings.shape[0]
+  #if decoder_embeddings is not None:
+  #  assert num_decoder_symbols == decoder_embeddings.shape[0]
   
   with variable_scope.variable_scope(scope or "embedding_attention_seq2seq", dtype=dtype) as scope:
     dtype = scope.dtype
@@ -557,7 +561,8 @@ def embedding_attention_seq2seq(encoder_inputs,
          initial_state_attention=initial_state_attention,
          beam_search=beam_search,
          target_vocab_size=target_vocab_size,
-         beam_size=beam_size)
+         beam_size=beam_size, 
+         embedding=decoder_embeddings,)
 
 def sequence_loss_by_example(logits,
                              targets,

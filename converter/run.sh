@@ -5,11 +5,11 @@ python -m translate \
        --to_train_data ./data/all_original_train.ids\
        --from_dev_data ./data/all_modern_dev.ids\
        --to_dev_data ./data/all_original_dev.ids\
-       --num_layers 2 \
-       --size 256 \
-       --steps_per_checkpoint 50 \
-       --learning_rate 0.01 \
+       --num_layers 4 \
+       --size 516 \
+       --steps_per_checkpoint 1 \
+       --learning_rate 0.1 \
        --learning_rate_decay_factor 0.9 \
-       --from_vocab_size 10000\
-       --to_vocab_size 10000\
+       --from_vocab_size 18537\
+       --to_vocab_size 17608\
 
