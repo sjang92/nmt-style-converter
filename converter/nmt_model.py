@@ -59,7 +59,7 @@ class NMT_Model(object):
 
     """
     ====================== LIST OF CONFIG METHODS ==============================
-    Use the methods below to configure our nmt model. Since we might want to 
+    Use the methods below to configure our nmt model. Since we might want to
     test multiple configurations (cell type, func type, etc.) it would be more
     efficient to be able to change the cell / seq func from outside the object.
 
@@ -77,7 +77,7 @@ class NMT_Model(object):
 
     def define_embedding_mtrx(self, src_eb_mtrx=None, dst_eb_mtrx=None, trainable=True):
         """
-        takes in an initial embedding mtrx. It could be initialized as 
+        takes in an initial embedding mtrx. It could be initialized as
         the default one to be used for training. To do so, just pass None
         """
         assert self.source_vocab_size == len(src_eb_mtrx), 'embedding row size must equal src.|V|'# #row == |V|
@@ -90,13 +90,13 @@ class NMT_Model(object):
     def define_nmt_cell(self, size):
         """
         Use this function to define the rnn cell type for our NMT Model.
-        Args: 
+        Args:
             cell_type: string. ['gru', 'lstm', 'custom']
             size: number of units in each layer of the model
         """
         if self.size is None:
             self.size = size
-				
+
 				# Create the internal multi-layer cell for our RNN.
         #def single_cell():
             return tf.contrib.rnn.GRUCell(self.size)
@@ -111,7 +111,7 @@ class NMT_Model(object):
 
     def define_nmt_buckets(self, buckets):
         """
-        Defines the buckets that we're gonna use for our nmt system. 
+        Defines the buckets that we're gonna use for our nmt system.
         Once the buckets are read, [(5,10), (15, 20), ...] sets the input
         length for encoder/decoders appropriately
         """
@@ -142,7 +142,7 @@ class NMT_Model(object):
             def sampled_loss(labels, inputs):
                 with tf.device("/cpu:0"):
                     local_w_t = tf.cast(w_t, tf.float32)
-                    local_b = tf.cast(b, tf.float32) 
+                    local_b = tf.cast(b, tf.float32)
                     local_inputs = tf.cast(inputs, tf.float32)
                     labels = tf.reshape(labels, [-1, 1])
                     return tf.cast(
@@ -184,14 +184,14 @@ class NMT_Model(object):
             def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
                 return seq2seq.embedding_attention_seq2seq(encoder_inputs,
                 #return tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(encoder_inputs,
-                    decoder_inputs, 
-                    self.cell, 
+                    decoder_inputs,
+                    self.cell,
                     #None,
-                    num_encoder_symbols=self.source_vocab_size, 
-                    num_decoder_symbols=self.target_vocab_size, 
-                    embedding_size=300, # use google's  
-                    output_projection=self.output_projection, 
-                    feed_previous=do_decode, 
+                    num_encoder_symbols=self.source_vocab_size,
+                    num_decoder_symbols=self.target_vocab_size,
+                    embedding_size=300, # use google's
+                    output_projection=self.output_projection,
+                    feed_previous=do_decode,
                     dtype=self.dtype,
                     beam_search=self.beam_search,
                     target_vocab_size=self.target_vocab_size, beam_size=self.beam_size,
@@ -208,10 +208,10 @@ class NMT_Model(object):
             # self.dst_embedding_mtrx = None
 
             # def seq2seq_func(encoder_inputs, decoder_inputs, do_decode):
-            #     return seq_func(self.encoder_inputs, self.decoder_inputs, self.cell, 
-            #                     self.source_vocab_size, self.target_vocab_size, self.encoder_dim, 
-            #                     self.decoder_dim, src_embedding_init=self.src_embedding_mtrx, 
-            #                     dst_embedding_init=self.dst_embedding_mtrx, 
+            #     return seq_func(self.encoder_inputs, self.decoder_inputs, self.cell,
+            #                     self.source_vocab_size, self.target_vocab_size, self.encoder_dim,
+            #                     self.decoder_dim, src_embedding_init=self.src_embedding_mtrx,
+            #                     dst_embedding_init=self.dst_embedding_mtrx,
             #                     output_projection=None, feed_previous=do_decode)
 
     def define_train_ops(self):
@@ -246,7 +246,8 @@ class NMT_Model(object):
             self.gradient_norms = []
             self.updates = []
             #opt = tf.train.GradientDescentOptimizer(self.learning_rate)
-            opt = tf.train.GradientDescentOptimizer(self.learning_rate)
+            #opt = tf.train.GradientDescentOptimizer(self.learning_rate)
+            opt = tf.train.AdamOptimizer(self.learning_rate)
             for b in xrange(len(self.buckets)):
                 gradients = tf.gradients(self.losses[b], params)
                 clipped_gradients, norm = tf.clip_by_global_norm(gradients, self.max_gradient_norm)
@@ -273,7 +274,7 @@ class NMT_Model(object):
             # Check if the sizes match.
         encoder_size, decoder_size = self.buckets[bucket_id]
         if len(encoder_inputs) != encoder_size:
-            raise ValueError("Encoder length must be equal to the one in bucket," 
+            raise ValueError("Encoder length must be equal to the one in bucket,"
                             " %d != %d." % (len(encoder_inputs), encoder_size))
         if len(decoder_inputs) != decoder_size:
             raise ValueError("Decoder length must be equal to the one in bucket,"
@@ -358,6 +359,6 @@ class NMT_Model(object):
                     batch_weight[batch_idx] = 0.0
             batch_weights.append(batch_weight)
 
-        #import pdb 
+        #import pdb
         #pdb.set_trace()
         return batch_encoder_inputs, batch_decoder_inputs, batch_weights
