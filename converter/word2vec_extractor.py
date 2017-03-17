@@ -28,7 +28,7 @@ import nltk
 
 # Step 1: Get the data, set the file_name
 directory = "./data/"
-file_name = "all_modern.snt.aligned"
+file_name = "all.snt"
 
 filename = directory+file_name
 token_filename = filename+".tokens"
@@ -54,7 +54,7 @@ def read_data(filename):
 words = read_data(filename)
 
 # Step 2: Build the dictionary and replace rare words with UNK token.
-vocabulary_size = 23000
+vocabulary_size = 50000
 
 def build_dataset(words):
     global vocabulary_size
@@ -198,7 +198,7 @@ with graph.as_default():
                         num_classes=vocabulary_size))
 
     # Construct the SGD optimizer using a learning rate of 1.0.
-    optimizer = tf.train.GradientDescentOptimizer(0.05).minimize(loss)
+    optimizer = tf.train.AdamOptimizer(0.002).minimize(loss)
 
     # Compute the cosine similarity between minibatch examples and all embeddings.
     norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
@@ -213,7 +213,7 @@ with graph.as_default():
 
 # Step 5: Begin training.
 #num_steps = 100001
-num_steps = 80001
+num_steps = 100001
 
 with tf.Session(graph=graph) as session:
     # We must initialize all variables before we use them.
@@ -252,4 +252,4 @@ with tf.Session(graph=graph) as session:
                 print(log_str)
         """
     final_embeddings = normalized_embeddings.eval()
-    np.save('decoder_embed.npy', final_embeddings)
+    np.save('all_embed.npy', final_embeddings)
