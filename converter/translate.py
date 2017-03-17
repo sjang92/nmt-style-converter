@@ -145,11 +145,11 @@ def create_model(session, forward_only):
             beam_size=FLAGS.beam_size)
 
     # try loading embeding matrix
-    encoder_mtrx = np.load('w2v.npy')
-    #decoder_mtrx = np.load('decoder_embeddings.npy')
+    encoder_mtrx = np.load('modern.npy')
+    decoder_mtrx = np.load('original.npy')
 
     if encoder_mtrx is not None or decoder_mtrx is not None:
-        model.define_embedding_mtrx(encoder_mtrx, None)
+        model.define_embedding_mtrx(encoder_mtrx, decoder_mtrx)
 
     model.define_loss_func()
     model.define_nmt_cell(FLAGS.size)
@@ -239,7 +239,7 @@ def train():
             step_time += (time.time() - start_time) / FLAGS.steps_per_checkpoint
             loss += step_loss / FLAGS.steps_per_checkpoint
             current_step += 1
-            if current_step % 4000 == 0: sess.run(model.learning_rate_decay_op)
+            if current_step - 4000 >= 0 and current_step % 1000 == 0: sess.run(model.learning_rate_decay_op)
             # Once in a while, we save checkpoint, print statistics, and run evals.
             if current_step % FLAGS.steps_per_checkpoint == 0:
                 # Print statistics for the previous epoch.
@@ -250,8 +250,8 @@ def train():
                 # Decrease learning rate if no improvement was seen over last 3 times.
                 #if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):
                 #    sess.run(model.learning_rate_decay_op)
-                if len(previous_losses) > 2:
-                    sess.run(model.learning_rate_decay_op)
+                #if len(previous_losses) > 2:
+                #    sess.run(model.learning_rate_decay_op)
                 previous_losses.append(loss)
                 # Save checkpoint and zero timer and loss.
                 checkpoint_path = os.path.join(FLAGS.train_dir, "translate.ckpt")
@@ -272,6 +272,32 @@ def train():
                 sys.stdout.flush()
 
 
+import nltk
+
+def tokenize(sentence):
+    result = []
+    arr = nltk.word_tokenize(sentence)
+    for word in arr:
+        new_arr = word.strip().aplit()
+        result.append(new_arr)
+    return result
+
+def lookup_tokens(file_name):
+    dic = dict()
+    with open(file_name, 'r') as f:
+        for line in f:
+            dic[line.strip('\n')] = len(dic.keys())
+        f.close()
+    return dic
+
+def rev_lookup_tokens(file_name):
+    dic = dict()
+    with open(file_name, 'r') as f:
+        for line in f:
+		    dic[len(dic.keys())] = line.strip('\n')
+        f.close()
+	return dic
+
 def decode():
     with tf.Session() as sess:
         # Create model and load parameters.
@@ -287,9 +313,10 @@ def decode():
                                                                  """
         en_vocab_path = "./data/all_modern.snt.aligned.tokens"
         fr_vocab_path = "./data/all_original.snt.aligned.tokens"
-        en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
-        _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
-
+        #en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
+        #_, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
+        en_vocab = lookup_tokens(en_vocab_path)
+        rev_fr_vocab = rev_lookup_tokens(fr_vocab_path)
 
         # Decode from standard input.
         sys.stdout.write("> ")

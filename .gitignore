@@ -6,4 +6,5 @@
 ./converter/bad_checkpoint
 ./converter/checkpoint/*
 ./converter/2checkpoint/*
+./converter/good_model/*
 
