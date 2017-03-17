@@ -3,6 +3,7 @@
 *.swp
 .DS_Store
 ./converter/data/*
+./converter/bad_checkpoint
 ./converter/checkpoint/*
 ./converter/2checkpoint/*
 

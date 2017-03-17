@@ -81,8 +81,10 @@ class NMT_Model(object):
         takes in an initial embedding mtrx. It could be initialized as
         the default one to be used for training. To do so, just pass None
         """
+        print(self.source_vocab_size)
+        print(len(src_eb_mtrx))
         assert self.source_vocab_size == len(src_eb_mtrx), 'embedding row size must equal src.|V|'# #row == |V|
-        assert self.target_vocab_size == len(dst_eb_mtrx), 'embedding row size msut equal dst.|V|'
+        ###assert self.target_vocab_size == len(dst_eb_mtrx), 'embedding row size msut equal dst.|V|'
 
         self.src_embedding_mtrx = src_eb_mtrx
         self.dst_embedding_mtrx = dst_eb_mtrx

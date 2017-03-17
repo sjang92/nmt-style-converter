@@ -145,11 +145,11 @@ def create_model(session, forward_only):
             beam_size=FLAGS.beam_size)
 
     # try loading embeding matrix
-    encoder_mtrx = np.load('encoder_embeddings.npy')
-    decoder_mtrx = np.load('decoder_embeddings.npy')
+    encoder_mtrx = np.load('w2v.npy')
+    #decoder_mtrx = np.load('decoder_embeddings.npy')
 
     if encoder_mtrx is not None or decoder_mtrx is not None:
-        model.define_embedding_mtrx(encoder_mtrx, decoder_mtrx)
+        model.define_embedding_mtrx(encoder_mtrx, None)
 
     model.define_loss_func()
     model.define_nmt_cell(FLAGS.size)
@@ -239,7 +239,7 @@ def train():
             step_time += (time.time() - start_time) / FLAGS.steps_per_checkpoint
             loss += step_loss / FLAGS.steps_per_checkpoint
             current_step += 1
-
+            if current_step % 4000 == 0: sess.run(model.learning_rate_decay_op)
             # Once in a while, we save checkpoint, print statistics, and run evals.
             if current_step % FLAGS.steps_per_checkpoint == 0:
                 # Print statistics for the previous epoch.
@@ -285,8 +285,8 @@ def decode():
         fr_vocab_path = os.path.join(FLAGS.data_dir,
                                                                  "vocab%d.to" % FLAGS.to_vocab_size)
                                                                  """
-        en_vocab_path = "./data/all_modern.vocab"
-        fr_vocab_path = "./data/all_original.vocab"
+        en_vocab_path = "./data/all_modern.snt.aligned.tokens"
+        fr_vocab_path = "./data/all_original.snt.aligned.tokens"
         en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
         _, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
 
