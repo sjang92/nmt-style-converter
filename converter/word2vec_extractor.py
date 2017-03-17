@@ -28,7 +28,7 @@ import nltk
 
 # Step 1: Get the data, set the file_name
 directory = "./data/"
-file_name = "all.snt"
+file_name = "all_original.snt.aligned"
 
 filename = directory+file_name
 token_filename = filename+".tokens"
