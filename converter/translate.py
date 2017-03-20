@@ -15,9 +15,9 @@ import logging
 import numpy as np
 import tensorflow as tf
 
-import data_utils
+import nmt_model
 import seq2seq_model
-
+import nltk
 
 tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
 tf.app.flags.DEFINE_float("learning_rate_decay_factor", 0.99,
@@ -49,46 +49,44 @@ tf.app.flags.DEFINE_boolean("use_fp16", False,"Train using fp16 instead of fp32.
 
 FLAGS = tf.app.flags.FLAGS
 
-# We use a number of buckets and pad to the closest one for efficiency.
-# See seq2seq_model.Seq2SeqModel for details of how they work.
 #_buckets = [(5, 10), (10, 15), (20, 25), (40, 50)]
 _buckets = [(10, 15), (40,50)]
 
+# Default Symbols required for our seq2seq model
+_PAD = b"_PAD"
+_GO = b"_GO"
+_EOS = b"_EOS"
+_UNK = b"_UNK"
+_START_VOCAB = [_PAD, _GO, _EOS, _UNK]
+
+PAD_ID = 0
+GO_ID = 1
+EOS_ID = 2
+UNK_ID = 3
+
+
 def read_data(source_path, target_path, max_size=None):
-    """Read data from source and target files and put into buckets.
-
-    Args:
-        source_path: path to the files with token-ids for the source language.
-        target_path: path to the file with token-ids for the target language;
-            it must be aligned with the source file: n-th line contains the desired
-            output for n-th line from the source_path.
-        max_size: maximum number of lines to read, all other will be ignored;
-            if 0 or None, data files will be read completely (no limit).
-
-    Returns:
-        data_set: a list of length len(_buckets); data_set[n] contains a list of
-            (source, target) pairs read from the provided data files that fit
-            into the n-th bucket, i.e., such that len(source) < _buckets[n][0] and
-            len(target) < _buckets[n][1]; source and target are lists of token-ids.
-    """
     data_set = [[] for _ in _buckets]
-    with tf.gfile.GFile(source_path, mode="r") as source_file:
-        with tf.gfile.GFile(target_path, mode="r") as target_file:
-            source, target = source_file.readline(), target_file.readline()
-            counter = 0
-            while source and target and (not max_size or counter < max_size):
-                counter += 1
-                if counter % 100000 == 0:
-                    print("    reading data line %d" % counter)
-                    sys.stdout.flush()
-                source_ids = [int(x) for x in source.split()]
-                target_ids = [int(x) for x in target.split()]
-                target_ids.append(data_utils.EOS_ID)
+
+    with open(source_path, 'r') as source_file:
+        with open(target_path, 'r') as target_file:
+
+            source_line, target_line = source_file.readline(), target_file.readline()
+
+            while source_line and target_line:
+
+                source_ids = [int(x) for x in source_line.split()]
+                target_ids = [int(x) for x in target_line.split()]
+
+                target_ids.append(EOS_ID)
+
+                # Find the appropriate bucket for this source, target pair 
                 for bucket_id, (source_size, target_size) in enumerate(_buckets):
                     if len(source_ids) < source_size and len(target_ids) < target_size:
                         data_set[bucket_id].append([source_ids, target_ids])
                         break
-                source, target = source_file.readline(), target_file.readline()
+
+                source_line, target_line = source_file.readline(), target_file.readline()
     return data_set
 
 
@@ -127,15 +125,15 @@ def create_model(session, forward_only):
     model.define_train_ops()
 
     ckpt = tf.train.get_checkpoint_state(FLAGS.train_dir)
-    if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
-        print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
-        model.saver.restore(session, ckpt.model_checkpoint_path)
-        #model.saver.restore(session, './checkpoint/translate.ckpt-16700')
-    else:
-        print("Created model with fresh parameters.")
-        session.run(tf.global_variables_initializer())
-    return model
 
+    if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
+        print("Create model from checkpoint")
+        model.saver.restore(session, ckpt.model_checkpoint_path)
+    else:
+        print("Created a new model. ")
+        session.run(tf.global_variables_initializer())
+
+    return model
 
 def train():
     from_train = './data/all_modern.snt.aligned.ids'
@@ -145,7 +143,6 @@ def train():
 
     with tf.Session() as sess:
         # Create model.
-        print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.size))
         model = create_model(sess, False)
 
         # Read data into buckets and compute their sizes.
@@ -182,8 +179,10 @@ def train():
             step_time += (time.time() - start_time) / FLAGS.steps_per_checkpoint
             loss += step_loss / FLAGS.steps_per_checkpoint
             current_step += 1
+
+            # Change learning rate accordingly
             if current_step - 4000 >= 0 and current_step % 1000 == 0: sess.run(model.learning_rate_decay_op)
-            # Once in a while, we save checkpoint, print statistics, and run evals.
+
             if current_step % FLAGS.steps_per_checkpoint == 0:
                 # Print statistics for the previous epoch.
                 perplexity = math.exp(float(loss)) if loss < 300 else float("inf")
@@ -196,22 +195,7 @@ def train():
                 checkpoint_path = os.path.join(FLAGS.train_dir, "translate.ckpt")
                 model.saver.save(sess, checkpoint_path, global_step=model.global_step)
                 step_time, loss = 0.0, 0.0
-                # Run evals on development set and print their perplexity.
-                for bucket_id in xrange(len(_buckets)):
-                    if len(dev_set[bucket_id]) == 0:
-                        print("    eval: empty bucket %d" % (bucket_id))
-                        continue
-                    encoder_inputs, decoder_inputs, target_weights = model.get_batch(
-                            dev_set, bucket_id)
-                    _, eval_loss, _ = model.step(sess, encoder_inputs, decoder_inputs,
-                                                                             target_weights, bucket_id, True)
-                    eval_ppx = math.exp(float(eval_loss)) if eval_loss < 300 else float(
-                            "inf")
-                    print("    eval: bucket %d perplexity %.2f" % (bucket_id, eval_ppx))
                 sys.stdout.flush()
-
-
-import nltk
 
 def tokenize(sentence):
     result = []
@@ -237,11 +221,29 @@ def rev_lookup_tokens(file_name):
         f.close()
 	return dic
 
+def sentence_to_tokens(sentence, vocab):
+    sentence = tokenize(sentence)
+    result = []
+    for word in sentence:
+        result.append(vocab[word])
+    return result
+
+def get_bucket_id(token_ids):
+    length = len(token_ids)
+    result = length - 1
+
+    for i, curr_bucket in enumerate(_buckets):
+        if curr_bucket[0] >= length:
+            result = i
+            break
+
+    return result
+
 def decode():
     with tf.Session() as sess:
         # Create model and load parameters.
         model = create_model(sess, True)
-        model.batch_size = 1    # We decode one sentence at a time.
+        model.batch_size = 1 # set the batch size of our model to be 1
 
         from_vocab_path = "./data/rap.trans.aligned.tokens"
         to_vocab_path = "./data/rap.original.aligned.tokens"
@@ -252,89 +254,37 @@ def decode():
         sys.stdout.write("> ")
         sys.stdout.flush()
         sentence = sys.stdin.readline()
-        while sentence:
-            # Get token-ids for the input sentence.
-            token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), from_vocab)
-            #print "TOKENS : "
-            #print token_ids
-            # Which bucket does it belong to?
-            bucket_id = len(_buckets) - 1
-            for i, bucket in enumerate(_buckets):
-                if bucket[0] >= len(token_ids):
-                    bucket_id = i
-                    break
-                else:
-                    logging.warning("Sentence truncated: %s", sentence)
 
-            # Get a 1-element batch to feed the sentence to the model.
-            encoder_inputs, decoder_inputs, target_weights = model.get_batch(
-                    {bucket_id: [(token_ids, [])]}, bucket_id)
-            # Get output logits for the sentence.
-            _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs,
-                                                                             target_weights, bucket_id, True)
-            # This is a greedy decoder - outputs are just argmaxes of output_logits.
+        # Keep decoding as long as the user is keep feeding decoding inputs
+        while sentence is not None:
+            token_ids = sentence_to_tokens(sentence, from_vocab)
+
+            bucket_id = get_bucket_id(token_ids)
+
+            # Create a batch of size 1 out of the given tokens
+            encoder_inputs, decoder_inputs, target_weights = model.get_batch({bucket_id: [(token_ids, [])]}, bucket_id)
+
+            # Try decoding the given token_ids
+            _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs, target_weights, bucket_id, True)
+
+            # Beamsearch returns logits for the best symbols
             outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
-            # If there is an EOS symbol in outputs, cut them at that point.
-            if data_utils.EOS_ID in outputs:
-                outputs = outputs[:outputs.index(data_utils.EOS_ID)]
+
+            # Try to cut sentence when its supposed to end
+            if EOS_ID in outputs:
+                outputs = outputs[:outputs.index(EOS_ID)]
+
             # Print out French sentence corresponding to outputs.
-            print(" ".join([tf.compat.as_str(rev_to_vocab[output]) for output in outputs]))
+            print(" ".join([str(rev_to_vocab[output]) for output in outputs]))
             print("> ", end="")
+
             sys.stdout.flush()
+
+            # Read the next sentence
             sentence = sys.stdin.readline()
 
-
-def self_test():
-    """Test the translation model."""
-    with tf.Session() as sess:
-        print("Self-test for neural translation model.")
-        # Create model with vocabularies of 10, 2 small buckets, 2 layers of 32.
-        import nmt_model
-        model = nmt_model.NMT_Model(10, 10, [(3, 3), (6, 6)], 32, 2, 5.0, 32, 0.3, 0.99, num_samples=8)
-        model.define_loss_func()
-        model.define_nmt_cell(None)
-
-        model.define_nmt_seq_func("attention")
-        model.define_nmt_buckets(None)
-        model.define_train_ops()
-
-        sess.run(tf.global_variables_initializer())
-
-        # Fake data set for both the (3, 3) and (6, 6) bucket.
-        data_set = ([([1, 1], [2, 2]), ([3, 3], [4]), ([5], [6])],
-                                [([1, 1, 1, 1, 1], [2, 2, 2, 2, 2]), ([3, 3, 3], [5, 6])])
-        for _ in xrange(5):    # Train the fake model for 5 steps.
-            bucket_id = random.choice([0, 1])
-            encoder_inputs, decoder_inputs, target_weights = model.get_batch(
-                    data_set, bucket_id)
-            _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs, target_weights,
-                                 bucket_id, False)
-
-        for data in data_set:
-            token_ids = data[0]
-            bucket_id = len(_buckets) - 1
-            for i, bucket in enumerate(_buckets):
-                if bucket[0] >= len(data[0]):
-                    bucket_id = i
-                    break
-                else:
-                    logging.warning("Sentence truncated: %s", sentence)
-
-            # Get a 1-element batch to feed the sentence to the model.
-            encoder_inputs, decoder_inputs, target_weights = model.get_batch({bucket_id: [(token_ids, [])]}, bucket_id)
-            # Get output logits for the sentence.
-            _, _, output_logits = model.step(sess, encoder_inputs, decoder_inputs, target_weights, bucket_id, True)
-            # This is a greedy decoder - outputs are just argmaxes of output_logits.
-            outputs = [int(np.argmax(logit, axis=1)) for logit in output_logits]
-            # If there is an EOS symbol in outputs, cut them at that point.
-            if data_utils.EOS_ID in outputs: outputs = outputs[:outputs.index(data_utils.EOS_ID)]
-            print(outputs)
-            print(data[1])
-
 def main(_):
-    if FLAGS.self_test:
-        self_test()
-    elif FLAGS.decode:
+    if FLAGS.decode:
         decode()
     else:
         train()

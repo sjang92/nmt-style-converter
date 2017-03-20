@@ -5,7 +5,12 @@ import nmt_seq2seq as seq2seq
 import random
 import numpy as np
 from six.moves import xrange
-import data_utils
+
+PAD_ID = 0
+GO_ID = 1
+EOS_ID = 2
+UNK_ID = 3
+
 class NMT_Model(object):
 
     def __init__(self,
@@ -27,9 +32,6 @@ class NMT_Model(object):
         """
         Initialize the NMT Model
         """
-
-        # since we're dealing with the same language, vocab size should be the same
-        # TODO : See if we need to make them different
         self.source_vocab_size = source_vocab_size
         self.target_vocab_size = target_vocab_size
 
@@ -82,7 +84,6 @@ class NMT_Model(object):
         print(self.source_vocab_size)
         print(len(src_eb_mtrx))
         assert self.source_vocab_size == len(src_eb_mtrx), 'embedding row size must equal src.|V|'# #row == |V|
-        ###assert self.target_vocab_size == len(dst_eb_mtrx), 'embedding row size msut equal dst.|V|'
 
         self.src_embedding_mtrx = src_eb_mtrx
         self.dst_embedding_mtrx = dst_eb_mtrx
@@ -99,9 +100,9 @@ class NMT_Model(object):
             self.size = size
 
         self.cell = tf.contrib.rnn.LSTMCell(300, num_proj=self.size)
-        
+
         if self.num_layers > 1:
-            self.cell = tf.contrib.rnn.MultiRNNCell([single_cell() for _ in range(self.num_layers)])
+            self.cell = tf.contrib.rnn.MultiRNNCell([self.cell for _ in range(self.num_layers)])
 
     def define_nmt_buckets(self, buckets):
         """
@@ -109,7 +110,6 @@ class NMT_Model(object):
         Once the buckets are read, [(5,10), (15, 20), ...] sets the input
         length for encoder/decoders appropriately
         """
-        # self.buckets = buckets
         self.encoder_inputs = []
         self.decoder_inputs = []
         self.target_weights = []
@@ -121,93 +121,30 @@ class NMT_Model(object):
             self.decoder_inputs.append(tf.placeholder(tf.int32, shape=[None], name="decoder{0}".format(i)))
             self.target_weights.append(tf.placeholder(self.dtype, shape=[None], name="weight{0}".format(i)))
 
-
-
     def define_loss_func(self, loss_type='sampled'):
-        #if loss_type == 'sampled':
-        if self.num_samples > 0 and self.num_samples < self.target_vocab_size:
-            #assert self.num_samples < self.target_vocab_size, '# samples should be less than |V|'
-            # TODO : self.size *= 2
-            w_t = tf.get_variable("proj_w", [self.target_vocab_size, self.size], dtype=self.dtype)
-            w = tf.transpose(w_t)
-            b = tf.get_variable("proj_b", [self.target_vocab_size], dtype=self.dtype)
-            self.output_projection = (w, b)
+        w_t = tf.get_variable("proj_w", [self.target_vocab_size, self.size], dtype=self.dtype)
+        w = tf.transpose(w_t)
+        b = tf.get_variable("proj_b", [self.target_vocab_size], dtype=self.dtype)
+        self.output_projection = (w, b)
 
-            def sampled_loss(labels, inputs):
-                with tf.device("/cpu:0"):
-                    local_w_t = tf.cast(w_t, tf.float32)
-                    local_b = tf.cast(b, tf.float32)
-                    local_inputs = tf.cast(inputs, tf.float32)
-                    labels = tf.reshape(labels, [-1, 1])
-                    return tf.cast(
-                        tf.nn.sampled_softmax_loss(
-                                weights=local_w_t,
-                                biases=local_b,
-                                labels=labels,
-                                inputs=local_inputs,
-                                num_sampled=self.num_samples,
-                                num_classes=self.target_vocab_size),
-                        self.dtype)
-            self.loss_func = sampled_loss
-        else:
-            assert False, "sampled"
-
-
-        #self.loss_func = sampled_loss
-
-
+        def sampled_loss(labels, inputs):
+            with tf.device("/cpu:0"):
+                return tf.cast(
+                    tf.nn.sampled_softmax_loss(weights=tf.cast(w_t, tf.float32), biases=tf.cast(b, tf.float32),labels=tf.reshape(labels, [-1, 1]),
+                                                inputs=tf.cast(inputs, tf.float32), num_sampled=self.num_samples, num_classes=self.target_vocab_size),
+                                                self.dtype)
+        self.loss_func = sampled_loss
 
     def define_nmt_seq_func(self, func_type):
         """
         Defines the sequence2sequence method for our NMT Model.
-        The function set by this method takes the following parameters
-            [encoder_inputs, decoder_inputs, cell, dtype=dtypes.float32, scope=None]
-
-        TODO : should we use different embeddings for src and dst??
-        Args:
-            func_type : string, ['basic', 'attention','custom']
         """
-        self.func_type = func_type
-
-        if func_type == 'basic':
-            print "Configured seq func as basic"
-            #self.seq_func = nmt.basic_rnn_seq2seq
-        elif func_type == 'attention':
-            print "Configured seq func as attention"
-            #seq_func = tf_seq2seq.embedding_attention_seq2seq
-            def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
-                return seq2seq.seq2seq(encoder_inputs,
-                #return tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(encoder_inputs,
-                    decoder_inputs,
-                    self.cell,
-                    #None,
-                    num_encoder_symbols=self.source_vocab_size,
-                    num_decoder_symbols=self.target_vocab_size,
-                    embedding_size=300, # use google's
-                    output_projection=self.output_projection,
-                    feed_previous=do_decode,
-                    dtype=self.dtype,
-                    beam_search=self.beam_search,
-                    target_vocab_size=self.target_vocab_size, beam_size=self.beam_size,
-                    encoder_embeddings=self.src_embedding_mtrx,
-                    decoder_embeddings=self.dst_embedding_mtrx)
-            self.seq2seq_f = seq2seq_f
-        else:
-            pass
-            # print "Custom"
-            # seq_func = attention_seq2seq
-
-            # self.encoder_dim = self.size
-            # self.decoder_dim = self.size
-            # self.src_embedding_mtrx = None
-            # self.dst_embedding_mtrx = None
-
-            # def seq2seq_func(encoder_inputs, decoder_inputs, do_decode):
-            #     return seq_func(self.encoder_inputs, self.decoder_inputs, self.cell,
-            #                     self.source_vocab_size, self.target_vocab_size, self.encoder_dim,
-            #                     self.decoder_dim, src_embedding_init=self.src_embedding_mtrx,
-            #                     dst_embedding_init=self.dst_embedding_mtrx,
-            #                     output_projection=None, feed_previous=do_decode)
+        print "Configured seq func as attention"
+        def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
+            return seq2seq.seq2seq(encoder_inputs, decoder_inputs, self.cell, num_encoder_symbols=self.source_vocab_size,num_decoder_symbols=self.target_vocab_size,
+                    embedding_size=300, output_projection=self.output_projection, feed_previous=do_decode, dtype=self.dtype, beam_search=self.beam_search,
+                    target_vocab_size=self.target_vocab_size, beam_size=self.beam_size, encoder_embeddings=self.src_embedding_mtrx,decoder_embeddings=self.dst_embedding_mtrx)
+        self.seq2seq_f = seq2seq_f
 
     def define_train_ops(self):
         # Our targets are decoder inputs shifted by one.
@@ -218,6 +155,7 @@ class NMT_Model(object):
                     self.encoder_inputs, self.decoder_inputs, targets,
                     self.target_weights, self.buckets, lambda x, y: self.seq2seq_f(x, y, True),
                     softmax_loss_function=self.loss_func)
+
             # If we use output projection, we need to project outputs for decoding.
             if self.output_projection is not None:
                 for b in xrange(len(self.buckets)):
@@ -226,16 +164,12 @@ class NMT_Model(object):
                             for output in self.outputs[b]
                     ]
         else:
-            #import pdb
-            #pdb.set_trace()
-
             self.outputs, self.losses = tf.contrib.legacy_seq2seq.model_with_buckets(
                     self.encoder_inputs, self.decoder_inputs, targets,
                     self.target_weights, self.buckets,
                     lambda x, y: self.seq2seq_f(x, y, False),
                     softmax_loss_function=self.loss_func)
 
-        # Gradients and SGD update operation for training the model.
         params = tf.trainable_variables()
         if not self.forward_only:
             self.gradient_norms = []
@@ -243,13 +177,14 @@ class NMT_Model(object):
             #opt = tf.train.GradientDescentOptimizer(self.learning_rate)
             opt = tf.train.GradientDescentOptimizer(self.learning_rate)
             #opt = tf.train.AdamOptimizer(self.learning_rate)
+
             for b in xrange(len(self.buckets)):
                 gradients = tf.gradients(self.losses[b], params)
                 clipped_gradients, norm = tf.clip_by_global_norm(gradients, self.max_gradient_norm)
                 self.gradient_norms.append(norm)
-                self.updates.append(opt.apply_gradients(
-                        zip(clipped_gradients, params), global_step=self.global_step))
+                self.updates.append(opt.apply_gradients(zip(clipped_gradients, params), global_step=self.global_step))
 
+        # Define saver for our parameters
         self.saver = tf.train.Saver(tf.global_variables())
 
 
@@ -258,27 +193,9 @@ class NMT_Model(object):
     """
 
     def step(self, session, encoder_inputs, decoder_inputs, target_weights, bucket_id, forward_only):
-        """
-        Run a single step of our nmt model.
 
-        Args:
-            session : tf session
-            encoder_inputs, decoder_inputs : numpy array of token ids
-            bucket_id: which bucket to use
-        """
-            # Check if the sizes match.
         encoder_size, decoder_size = self.buckets[bucket_id]
-        if len(encoder_inputs) != encoder_size:
-            raise ValueError("Encoder length must be equal to the one in bucket,"
-                            " %d != %d." % (len(encoder_inputs), encoder_size))
-        if len(decoder_inputs) != decoder_size:
-            raise ValueError("Decoder length must be equal to the one in bucket,"
-                            " %d != %d." % (len(decoder_inputs), decoder_size))
-        if len(target_weights) != decoder_size:
-            raise ValueError("Weights length must be equal to the one in bucket,"
-                            " %d != %d." % (len(target_weights), decoder_size))
 
-        # Input feed: encoder inputs, decoder inputs, target_weights, as provided.
         input_feed = {}
         for l in xrange(encoder_size):
             input_feed[self.encoder_inputs[l].name] = encoder_inputs[l]
@@ -286,74 +203,54 @@ class NMT_Model(object):
             input_feed[self.decoder_inputs[l].name] = decoder_inputs[l]
             input_feed[self.target_weights[l].name] = target_weights[l]
 
-        # Since our targets are decoder inputs shifted by one, we need one more.
         last_target = self.decoder_inputs[decoder_size].name
         input_feed[last_target] = np.zeros([self.batch_size], dtype=np.int32)
 
-        # Output feed: depends on whether we do a backward step or not.
         if not forward_only:
-            output_feed = [self.updates[bucket_id],  # Update Op that does SGD.
-                            self.gradient_norms[bucket_id],  # Gradient norm.
-                            self.losses[bucket_id]]  # Loss for this batch.
-
-        # TODO : THIS IS WHERE WE DO BEAM SEARCH
+            output_feed = [self.updates[bucket_id],
+                            self.gradient_norms[bucket_id],
+                            self.losses[bucket_id]]
         else:
-            output_feed = [self.losses[bucket_id]]  # Loss for this batch.
-            for l in xrange(decoder_size):  # Output logits.
+            output_feed = [self.losses[bucket_id]]
+            for l in xrange(decoder_size): 
                 output_feed.append(self.outputs[bucket_id][l])
 
         outputs = session.run(output_feed, input_feed)
         if not forward_only:
-            return outputs[1], outputs[2], None  # Gradient norm, loss, no outputs.
+            return outputs[1], outputs[2], None 
         else:
-            return None, outputs[0], outputs[1:]  # No gradient norm, loss, outputs.
+            return None, outputs[0], outputs[1:]
 
     def get_batch(self, data, bucket_id):
-        """
-        Get a random batch of data from the specified step.
-        """
-            # Get a random batch of encoder and decoder inputs from data,
-        # pad them if needed, reverse encoder inputs and add GO to decoder.
         encoder_size, decoder_size = self.buckets[bucket_id]
         encoder_inputs, decoder_inputs = [], []
 
         for _ in xrange(self.batch_size):
             encoder_input, decoder_input = random.choice(data[bucket_id])
 
-            # Encoder inputs are padded and then reversed.
-            encoder_pad = [data_utils.PAD_ID] * (encoder_size - len(encoder_input))
+            encoder_pad = [PAD_ID] * (encoder_size - len(encoder_input))
             encoder_inputs.append(list(reversed(encoder_input + encoder_pad)))
 
-            # Decoder inputs get an extra "GO" symbol, and are padded then.
             decoder_pad_size = decoder_size - len(decoder_input) - 1
-            decoder_inputs.append([data_utils.GO_ID] + decoder_input +
-                                    [data_utils.PAD_ID] * decoder_pad_size)
+            decoder_inputs.append([GO_ID] + decoder_input +
+                                    [PAD_ID] * decoder_pad_size)
 
-        # Now we create batch-major vectors from the data selected above.
         batch_encoder_inputs, batch_decoder_inputs, batch_weights = [], [], []
 
-        # Batch encoder inputs are just re-indexed encoder_inputs.
         for length_idx in xrange(encoder_size):
             batch_encoder_inputs.append(
                 np.array([encoder_inputs[batch_idx][length_idx]
                         for batch_idx in xrange(self.batch_size)], dtype=np.int32))
 
-        # Batch decoder inputs are re-indexed decoder_inputs, we create weights.
         for length_idx in xrange(decoder_size):
             batch_decoder_inputs.append(np.array([decoder_inputs[batch_idx][length_idx]
                         for batch_idx in xrange(self.batch_size)], dtype=np.int32))
 
-            # Create target_weights to be 0 for targets that are padding.
             batch_weight = np.ones(self.batch_size, dtype=np.float32)
             for batch_idx in xrange(self.batch_size):
-                # We set weight to 0 if the corresponding target is a PAD symbol.
-                # The corresponding target is decoder_input shifted by 1 forward.
                 if length_idx < decoder_size - 1:
                     target = decoder_inputs[batch_idx][length_idx + 1]
-                if length_idx == decoder_size - 1 or target == data_utils.PAD_ID:
+                if length_idx == decoder_size - 1 or target == PAD_ID:
                     batch_weight[batch_idx] = 0.0
             batch_weights.append(batch_weight)
-
-        #import pdb
-        #pdb.set_trace()
         return batch_encoder_inputs, batch_decoder_inputs, batch_weights
