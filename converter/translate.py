@@ -1,35 +1,9 @@
-# Copyright 2015 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#         http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-"""Binary for training translation models and decoding from them.
-
-Running this program without --decode will download the WMT corpus into
-the directory specified as --data_dir and tokenize it in a very basic way,
-and then start training a model saving checkpoints to --train_dir.
-
-Running with --decode starts an interactive loop so you can see how
-the current checkpoint translates English sentences into French.
-
-See the following papers for more information on neural translation models.
- * http://arxiv.org/abs/1409.3215
- * http://arxiv.org/abs/1409.0473
- * http://arxiv.org/abs/1412.2007
-"""
+# These are some imports used by tensorflow contributors. 
+# We're not completely sure why, but lets use it! must be good stuff
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from six.moves import xrange    # pylint: disable=redefined-builtin
 
 import math
 import os
@@ -39,16 +13,10 @@ import time
 import logging
 
 import numpy as np
-from six.moves import xrange    # pylint: disable=redefined-builtin
 import tensorflow as tf
 
 import data_utils
 import seq2seq_model
-
-from_train_data_path= "./data/dummy_corpus.from.ids"
-to_train_data_path= "./data/dummy_corpus.to.ids"
-from_dev_data_path = from_train_data_path
-to_dev_data_path = to_train_data_path
 
 
 tf.app.flags.DEFINE_float("learning_rate", 0.5, "Learning rate.")
@@ -83,8 +51,8 @@ FLAGS = tf.app.flags.FLAGS
 
 # We use a number of buckets and pad to the closest one for efficiency.
 # See seq2seq_model.Seq2SeqModel for details of how they work.
-_buckets = [(5, 10), (10, 15), (20, 25), (40, 50)]
-
+#_buckets = [(5, 10), (10, 15), (20, 25), (40, 50)]
+_buckets = [(10, 15), (40,50)]
 
 def read_data(source_path, target_path, max_size=None):
     """Read data from source and target files and put into buckets.
@@ -145,8 +113,8 @@ def create_model(session, forward_only):
             beam_size=FLAGS.beam_size)
 
     # try loading embeding matrix
-    encoder_mtrx = np.load('modern.npy')
-    decoder_mtrx = np.load('original.npy')
+    encoder_mtrx = np.load('trans.npy')
+    decoder_mtrx = np.load('orig.npy')
 
     if encoder_mtrx is not None or decoder_mtrx is not None:
         model.define_embedding_mtrx(encoder_mtrx, decoder_mtrx)
@@ -170,31 +138,6 @@ def create_model(session, forward_only):
 
 
 def train():
-    """Train a en->fr translation model using WMT data."""
-    """
-    from_train = None
-    to_train = None
-    from_dev = None
-    to_dev = None
-    if FLAGS.from_train_data and FLAGS.to_train_data:
-        from_train_data = FLAGS.from_train_data
-        to_train_data = FLAGS.to_train_data
-        from_dev_data = from_train_data
-        to_dev_data = to_train_data
-        if FLAGS.from_dev_data and FLAGS.to_dev_data:
-            from_dev_data = FLAGS.from_dev_data
-            to_dev_data = FLAGS.to_dev_data
-        from_train, to_train, from_dev, to_dev, _, _ = data_utils.prepare_data(
-                FLAGS.data_dir,
-                from_train_data,
-                to_train_data,
-                from_dev_data,
-                to_dev_data,
-                FLAGS.from_vocab_size,
-                FLAGS.to_vocab_size)
-    else:
-        assert False, "Should never come here"
-    """
     from_train = './data/all_modern.snt.aligned.ids'
     to_train = './data/all_original.snt.aligned.ids'
     from_dev = from_train
@@ -247,11 +190,7 @@ def train():
                 print ("global step %d learning rate %.8f step-time %.2f perplexity "
                              "%.2f" % (model.global_step.eval(), model.learning_rate.eval(),
                                                  step_time, perplexity))
-                # Decrease learning rate if no improvement was seen over last 3 times.
-                #if len(previous_losses) > 2 and loss > max(previous_losses[-3:]):
-                #    sess.run(model.learning_rate_decay_op)
-                #if len(previous_losses) > 2:
-                #    sess.run(model.learning_rate_decay_op)
+
                 previous_losses.append(loss)
                 # Save checkpoint and zero timer and loss.
                 checkpoint_path = os.path.join(FLAGS.train_dir, "translate.ckpt")
@@ -304,19 +243,10 @@ def decode():
         model = create_model(sess, True)
         model.batch_size = 1    # We decode one sentence at a time.
 
-        # Load vocabularies.
-        """
-        en_vocab_path = os.path.join(FLAGS.data_dir,
-                                                                 "vocab%d.from" % FLAGS.from_vocab_size)
-        fr_vocab_path = os.path.join(FLAGS.data_dir,
-                                                                 "vocab%d.to" % FLAGS.to_vocab_size)
-                                                                 """
-        en_vocab_path = "./data/all_modern.snt.aligned.tokens"
-        fr_vocab_path = "./data/all_original.snt.aligned.tokens"
-        #en_vocab, _ = data_utils.initialize_vocabulary(en_vocab_path)
-        #_, rev_fr_vocab = data_utils.initialize_vocabulary(fr_vocab_path)
-        en_vocab = lookup_tokens(en_vocab_path)
-        rev_fr_vocab = rev_lookup_tokens(fr_vocab_path)
+        from_vocab_path = "./data/rap.trans.aligned.tokens"
+        to_vocab_path = "./data/rap.original.aligned.tokens"
+        from_vocab = lookup_tokens(from_vocab_path)
+        rev_to_vocab = rev_lookup_tokens(to_vocab_path)
 
         # Decode from standard input.
         sys.stdout.write("> ")
@@ -324,7 +254,7 @@ def decode():
         sentence = sys.stdin.readline()
         while sentence:
             # Get token-ids for the input sentence.
-            token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), en_vocab)
+            token_ids = data_utils.sentence_to_token_ids(tf.compat.as_bytes(sentence), from_vocab)
             #print "TOKENS : "
             #print token_ids
             # Which bucket does it belong to?
@@ -348,7 +278,7 @@ def decode():
             if data_utils.EOS_ID in outputs:
                 outputs = outputs[:outputs.index(data_utils.EOS_ID)]
             # Print out French sentence corresponding to outputs.
-            print(" ".join([tf.compat.as_str(rev_fr_vocab[output]) for output in outputs]))
+            print(" ".join([tf.compat.as_str(rev_to_vocab[output]) for output in outputs]))
             print("> ", end="")
             sys.stdout.flush()
             sentence = sys.stdin.readline()

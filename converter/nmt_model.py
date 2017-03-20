@@ -88,8 +88,7 @@ class NMT_Model(object):
 
         self.src_embedding_mtrx = src_eb_mtrx
         self.dst_embedding_mtrx = dst_eb_mtrx
-        #self.src_embedding_mtrx = tf.Variable(src_eb_mtrx, trainable=trainable, dtype=self.dtype)
-        #self.dst_embedding_mtrx = tf.Variable(dst_eb_mtrx, trainable=trainable)
+
 
     def define_nmt_cell(self, size):
         """
@@ -186,7 +185,7 @@ class NMT_Model(object):
             print "Configured seq func as attention"
             #seq_func = tf_seq2seq.embedding_attention_seq2seq
             def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
-                return seq2seq.embedding_attention_seq2seq(encoder_inputs,
+                return seq2seq.seq2seq(encoder_inputs,
                 #return tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(encoder_inputs,
                     decoder_inputs,
                     self.cell,
