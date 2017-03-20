@@ -254,7 +254,7 @@ def decode():
         sys.stdout.write("> ")
         sys.stdout.flush()
         sentence = sys.stdin.readline()
-
+        
         # Keep decoding as long as the user is keep feeding decoding inputs
         while sentence is not None:
             token_ids = sentence_to_tokens(sentence, from_vocab)

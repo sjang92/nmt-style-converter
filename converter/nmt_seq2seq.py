@@ -24,9 +24,14 @@ import tensorflow as tf
 # Apparently we need to import this function since it's going to be deprecated
 linear = core_rnn_cell_impl._linear  # pylint: disable=protected-access
 
-g_log_beam_probs, g_beam_symbols, g_beam_path = [], [], []
+g_log_beam_probs, g_beam_path = [], []
 
-def get_symbol_lookup_function(embedding,output_projection=None,update_embedding=True,beam_search=False,target_vocab_size=0,beam_size=0):
+def get_symbol_lookup_function(embedding,
+                               output_projection=None,
+                               update_embedding=True,
+                               beam_search=False,
+                               target_vocab_size=0,
+                               beam_size=0):
 
   def lookup_function(prev, i):
 
@@ -41,19 +46,16 @@ def get_symbol_lookup_function(embedding,output_projection=None,update_embedding
 
   def beam_search_function(prev, i):
       global g_log_beam_probs
-      global g_beam_symbols
       global g_beam_path
 
       if i == 1:
-          g_log_beam_probs, g_beam_symbols, g_beam_path = [], [], []
+          g_log_beam_probs, g_beam_path = [], []
 
       log_beam_probs = g_log_beam_probs
       beam_path = g_beam_path
-      beam_symbols = g_beam_symbols
 
       if output_projection is not None:
-        prev = tf.nn.xw_plus_b(
-        prev, output_projection[0], output_projection[1])
+        prev = tf.matmul(prev, output_projection[0]) + output_projection[1]
 
       probs = tf.log(tf.nn.softmax(prev))
 
@@ -65,11 +67,11 @@ def get_symbol_lookup_function(embedding,output_projection=None,update_embedding
       indices = tf.reshape(indices, [-1, 1])
       best_probs = tf.reshape(best_probs, [-1, 1])
 
-      symbols = indices % target_vocab_size  # Which word in vocabulary.
-      beam_parent = indices // target_vocab_size  # Which hypothesis it came from.
 
-      beam_symbols.append(symbols)
-      beam_path.append(beam_parent)
+      symbols = indices % target_vocab_size
+      beam_prev = indices // target_vocab_size
+
+      beam_path.append(beam_prev)
       log_beam_probs.append(best_probs)
 
       symbols = symbols[:,0]
