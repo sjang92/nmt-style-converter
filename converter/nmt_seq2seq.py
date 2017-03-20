@@ -87,17 +87,9 @@ def get_symbol_lookup_function(embedding,
   return lookup_function
 
 
-def decode_with_attention(decoder_inputs,
-                      initial_state,
-                      attention_states,
-                      cell,
-                      output_size=None,
-                      num_heads=2,
-                      symbol_lookup=None,
-                      dtype=None,
-                      scope=None,
-                      beam_search=False,
-                      beam_size=0):
+def decode_with_attention(decoder_inputs,initial_state,attention_states,cell,output_size=None,
+                          num_heads=2,symbol_lookup=None,dtype=None,scope=None,beam_search=False,
+                          beam_size=0):
 
   if output_size is None:
     output_size = cell.output_size
@@ -127,6 +119,7 @@ def decode_with_attention(decoder_inputs,
 
     state = initial_state
 
+    # We adopted this from Tensorflow's seq2seq attention example. 
     def attention(query):
       ds = []  # Results of attention reads will be stored here.
       if nest.is_sequence(query):  # If the query is a tuple, flatten it.

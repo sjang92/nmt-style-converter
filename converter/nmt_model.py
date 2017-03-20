@@ -18,7 +18,6 @@ class NMT_Model(object):
                              batch_size,
                              learning_rate,
                              learning_rate_decay_factor,
-                             use_lstm=False,
                              num_samples=512,
                              forward_only=False,
                              dtype=tf.float32,
@@ -40,7 +39,6 @@ class NMT_Model(object):
         self.batch_size = batch_size
         self.num_layers = num_layers
         self.num_samples = num_samples
-        self.use_lstm = use_lstm
         self.dtype = dtype
         self.beam_search = beam_search
 
@@ -100,15 +98,8 @@ class NMT_Model(object):
         if self.size is None:
             self.size = size
 
-				# Create the internal multi-layer cell for our RNN.
-        #def single_cell():
-            return tf.contrib.rnn.GRUCell(self.size)
-        if True:
-        #if self.use_lstm:
-            def single_cell():
-                #return tf.contrib.rnn.BasicLSTMCell(self.size, state_is_tuple=True)
-                return tf.contrib.rnn.LSTMCell(300, num_proj=self.size)
-        self.cell = single_cell()
+        self.cell = tf.contrib.rnn.LSTMCell(300, num_proj=self.size)
+        
         if self.num_layers > 1:
             self.cell = tf.contrib.rnn.MultiRNNCell([single_cell() for _ in range(self.num_layers)])
 
