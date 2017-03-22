@@ -101,7 +101,7 @@ class NMT_Model(object):
         self.cell = tf.contrib.rnn.LSTMCell(300, num_proj=self.size)
         
         if self.num_layers > 1:
-            self.cell = tf.contrib.rnn.MultiRNNCell([single_cell() for _ in range(self.num_layers)])
+            self.cell = tf.contrib.rnn.MultiRNNCell([self.cell for _ in range(self.num_layers)])
 
     def define_nmt_buckets(self, buckets):
         """

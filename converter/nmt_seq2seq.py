@@ -24,14 +24,10 @@ import tensorflow as tf
 # Apparently we need to import this function since it's going to be deprecated
 linear = core_rnn_cell_impl._linear  # pylint: disable=protected-access
 
-g_log_beam_probs, g_beam_path = [], []
+g_beam_probs, g_beam_path = [], []
 
-def get_symbol_lookup_function(embedding,
-                               output_projection=None,
-                               update_embedding=True,
-                               beam_search=False,
-                               target_vocab_size=0,
-                               beam_size=0):
+def get_symbol_lookup_function(embedding, output_projection=None, update_embedding=True, beam_search=False,
+                               target_vocab_size=0, beam_size=0):
 
   def lookup_function(prev, i):
 
@@ -45,13 +41,13 @@ def get_symbol_lookup_function(embedding,
     return emb_prev
 
   def beam_search_function(prev, i):
-      global g_log_beam_probs
+      global g_beam_probs
       global g_beam_path
 
       if i == 1:
-          g_log_beam_probs, g_beam_path = [], []
+          g_beam_probs, g_beam_path = [], []
 
-      log_beam_probs = g_log_beam_probs
+      beam_probs = g_beam_probs
       beam_path = g_beam_path
 
       if output_projection is not None:
@@ -60,25 +56,18 @@ def get_symbol_lookup_function(embedding,
       probs = tf.log(tf.nn.softmax(prev))
 
       if i > 1:
-          probs = tf.reshape(probs + log_beam_probs[-1],
+          probs = tf.reshape(probs + beam_probs[-1],
                              [-1, beam_size * target_vocab_size])
 
       best_probs, indices = tf.nn.top_k(probs, beam_size)
       indices = tf.reshape(indices, [-1, 1])
       best_probs = tf.reshape(best_probs, [-1, 1])
 
-
-      symbols = indices % target_vocab_size
-      beam_prev = indices // target_vocab_size
-
-      beam_path.append(beam_prev)
-      log_beam_probs.append(best_probs)
-
-      symbols = symbols[:,0]
+      beam_probs.append(best_probs)
+      beam_path.append(indices // target_vocab_size)  # index of previous symbol
+      symbols = indices[:,0] % target_vocab_size
 
       output = embedding_ops.embedding_lookup(embedding, symbols)
-      if not update_embedding:
-          output = array_ops.stop_gradient(output)
       return output
 
   if beam_search:
@@ -200,7 +189,7 @@ def decode_with_attention(decoder_inputs,initial_state,attention_states,cell,out
     beam_outputs = []
     # first choose the beam path with highest score
 
-    col = g_log_beam_probs[-1] # last column
+    col = g_beam_probs[-1] # last column
     max_row = tf.reshape(tf.to_int32(tf.argmax(col, axis=0)), shape=())
 
 

@@ -5,8 +5,8 @@ python -m translate \
        --to_train_data ./data/all_original_train.ids\
        --from_dev_data ./data/all_modern_dev.ids\
        --to_dev_data ./data/all_original_dev.ids\
-       --num_layers 3 \
-       --size 256 \
+       --num_layers 4 \
+       --size 512 \
        --steps_per_checkpoint 1 \
        --learning_rate 0.5 \
        --learning_rate_decay_factor 0.9 \
